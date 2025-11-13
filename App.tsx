@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- SỬA LỖI: Thêm 'useEffect'
 import ScriptGenerator from './ScriptGenerator';
 import WatermarkRemover from './WatermarkRemover';
 
@@ -23,10 +23,31 @@ const TiktokIcon: React.FC = () => (
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('scriptGenerator');
-  
-  // --- THÊM MỚI: State để lưu API Key ---
   const [apiKey, setApiKey] = useState<string>('');
-  // ------------------------------------
+
+  // TÊN KEY ĐỂ LƯU TRỮ
+  const STORAGE_KEY = 'gemini-api-key';
+
+  // --- THÊM MỚI: Tự động tải key khi mở App ---
+  useEffect(() => {
+    const savedKey = localStorage.getItem(STORAGE_KEY);
+    if (savedKey) {
+      setApiKey(savedKey);
+    }
+  }, []); // Mảng rỗng [] nghĩa là chỉ chạy 1 lần khi App khởi động
+
+  // --- THÊM MỚI: Hàm để Lưu Key ---
+  const handleSaveKey = () => {
+    localStorage.setItem(STORAGE_KEY, apiKey);
+    alert('Đã lưu API Key vào trình duyệt!');
+  };
+
+  // --- THÊM MỚI: Hàm để Xóa Key ---
+  const handleClearKey = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setApiKey(''); // Xóa luôn ở ô input
+    alert('Đã xóa API Key khỏi trình duyệt!');
+  };
 
   const TabButton = ({ tabId, label }: { tabId: string; label: string }) => (
     <button
@@ -44,6 +65,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900 font-sans text-slate-200">
       <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
+          {/* ... (Phần Nav Tab và Icon Mạng Xã Hội giữ nguyên) ... */}
           <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center border-b border-slate-700">
                   <div>
@@ -68,16 +90,16 @@ const App: React.FC = () => {
           </div>
       </nav>
       
-      {/* --- THÊM MỚI: Khu vực nhập API Key --- */}
+      {/* --- SỬA LỖI: Cập nhật khu vực nhập API Key --- */}
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-slate-700 bg-slate-800/50">
         <label htmlFor="api-key-input" className="block text-sm font-medium text-yellow-400 mb-2">
-          Gemini API Key
+          Gemini API Key (Đã lưu vào trình duyệt của bạn)
         </label>
         <div className="flex">
           <input
             id="api-key-input"
             type="password"
-            placeholder="Dán Gemini API Key của bạn vào đây (Key sẽ không được lưu)"
+            placeholder="Dán Gemini API Key của bạn vào đây..."
             className="flex-grow bg-slate-700 border border-slate-600 rounded-l-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-yellow-500 placeholder-slate-400"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
@@ -86,17 +108,34 @@ const App: React.FC = () => {
             href="https://aistudio.google.com/app/apikey"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 px-4 py-2 bg-yellow-600 text-slate-900 rounded-r-md text-sm font-semibold hover:bg-yellow-700 transition-colors"
+            className="flex-shrink-0 px-4 py-2 bg-yellow-600 text-slate-900 text-sm font-semibold hover:bg-yellow-700 transition-colors"
           >
             Lấy Key
           </a>
+          
+          {/* NÚT LƯU MỚI */}
+          <button
+            type="button"
+            onClick={handleSaveKey}
+            className="flex-shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors"
+          >
+            Lưu Key
+          </button>
+          
+          {/* NÚT XÓA MỚI (chú ý 'rounded-r-md' để bo góc) */}
+          <button
+            type="button"
+            onClick={handleClearKey}
+            className="flex-shrink-0 px-4 py-2 bg-red-600 text-white rounded-r-md text-sm font-semibold hover:bg-red-700 transition-colors"
+          >
+            Xóa Key
+          </button>
+
         </div>
       </div>
       {/* ------------------------------------ */}
 
-      {/* SỬA LẠI 2 DÒNG DƯỚI ĐÂY:
-        Chúng ta truyền `apiKey` vào làm một "prop" cho 2 component con
-      */}
+      {/* Phần còn lại giữ nguyên, nó sẽ tự động nhận 'apiKey' mới */}
       <div style={{ display: activeTab === 'scriptGenerator' ? 'block' : 'none' }}>
         <ScriptGenerator apiKey={apiKey} />
       </div>

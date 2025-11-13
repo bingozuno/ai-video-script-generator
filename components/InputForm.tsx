@@ -3,10 +3,8 @@ import type { StyleInfo, CharacterReference, StoryChapter } from '../types';
 import { analyzeCharacterImage } from '../services/geminiService';
 
 interface InputFormProps {
-  // SỬA LỖI: Thêm apiKey vào props
-  apiKey: string;
-
   // State props
+  apiKey: string;
   mode: 'idea' | 'script';
   ideaInput: string;
   longStoryInput: string;
@@ -56,9 +54,8 @@ interface InputFormProps {
   onGenerateCharacterDefinition: () => void;
 }
 
-// --- CÁC HÀM TIỆN ÍCH (Giữ nguyên) ---
+
 const fileToBase64 = (file: File): Promise<{base64: string, type: string}> => {
-  // ... (giữ nguyên nội dung hàm) ...
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -72,7 +69,6 @@ const fileToBase64 = (file: File): Promise<{base64: string, type: string}> => {
 };
 
 export const defaultStyles: StyleInfo[] = [
-    // ... (giữ nguyên nội dung) ...
     { name: 'Photorealistic', prompt: 'photorealistic, highly detailed realistic photo, natural lighting, soft shadows, 8K resolution, ultra-detailed, sharp focus, professional DSLR photo, high dynamic range (HDR)', definition: 'Tạo ra hình ảnh giống hệt như ảnh chụp thực tế từ máy ảnh chuyên nghiệp, tập trung vào tính chân thực, chi tiết cao và tuân thủ các quy luật vật lý (ánh sáng, bóng đổ, tỷ lệ).' },
     { name: 'Anime', prompt: 'anime style, vibrant colors, cel-shaded, Studio Ghibli inspired, detailed background art', definition: 'Phong cách nghệ thuật hoạt hình Nhật Bản, với đặc trưng phóng đại, màu sắc rực rỡ và biểu cảm cảm xúc mạnh mẽ. Ưu tiên tính nghệ thuật hơn tính chân thực.' },
     { name: '2 anh em mèo', prompt: '3D animation style, Disney Pixar style, cinematic, hyper-realistic, photorealistic, high detail, Cute anthropomorphic kitten, adorable cat, big expressive eyes, Soft lighting, warm golden hour lighting, vibrant colors', definition: 'Phong cách hoạt hình 3D dễ thương, đáng yêu lấy cảm hứng từ Disney Pixar, với ánh sáng ấm áp và màu sắc rực rỡ, tập trung vào các nhân vật mèo nhân hóa.' },
@@ -82,7 +78,6 @@ export const defaultStyles: StyleInfo[] = [
 ];
 
 export const defaultAspectRatios = [
-    // ... (giữ nguyên nội dung) ...
     { name: 'Ngang', value: '16:9' },
     { name: 'Dọc', value: '9:16' },
     { name: 'Vuông', value: '1:1' },
@@ -90,7 +85,6 @@ export const defaultAspectRatios = [
 ];
 
 const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
-    // ... (giữ nguyên nội dung) ...
     <div className="relative group flex items-center ml-1.5 cursor-help">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -101,10 +95,8 @@ const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
         </div>
     </div>
 );
-// --- KẾT THÚC HÀM TIỆN ÍCH ---
 
 const InputForm: React.FC<InputFormProps> = (props) => {
-  // SỬA LỖI: Lấy apiKey từ props
   const {
       apiKey, // <-- ĐÃ THÊM
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
@@ -129,11 +121,12 @@ const InputForm: React.FC<InputFormProps> = (props) => {
 
   const [focusedChapterId, setFocusedChapterId] = useState<string | null>(null);
   
+  // --- THÊM MỚI: State để quản lý kéo-thả ---
+  const [draggedCharId, setDraggedCharId] = useState<string | null>(null);
+  
   const importFileRef = useRef<HTMLInputElement>(null);
 
-  // --- CÁC HÀM HANDLER (Giữ nguyên) ---
   const handleStyleClick = (prompt: string) => {
-    // ... (giữ nguyên nội dung hàm) ...
     const newSelection = [...selectedStylePrompts];
     const isSelected = newSelection.includes(prompt);
 
@@ -152,8 +145,8 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     }
     setSelectedStylePrompts(newSelection);
   };
+
   const handleSaveStyle = () => {
-    // ... (giữ nguyên nội dung hàm) ...
     if (!newStyleName.trim() || !newStylePrompt.trim()) return;
     const newStyle: StyleInfo = { name: newStyleName.trim(), prompt: newStylePrompt.trim(), definition: 'Phong cách tùy chỉnh do người dùng thêm vào.' };
     const updatedStyles = [...styles, newStyle];
@@ -165,8 +158,8 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     setNewStylePrompt('');
     setIsAddingStyle(false);
   };
+
   const handleSaveAspectRatio = () => {
-    // ... (giữ nguyên nội dung hàm) ...
     if (!newAspectRatioName.trim() || !newAspectRatioValue.trim()) return;
     const newRatio = { name: newAspectRatioName.trim(), value: newAspectRatioValue.trim() };
     const updatedRatios = [...aspectRatios, newRatio];
@@ -178,8 +171,8 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     setNewAspectRatioValue('');
     setIsAddingAspectRatio(false);
   };
+  
   const handleAddCharacter = () => {
-    // ... (giữ nguyên nội dung hàm) ...
     if (characterReferences.length < 5) {
       const newChar: CharacterReference = {
         id: `char-${Date.now()}`,
@@ -192,15 +185,20 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       setCharacterReferences([...characterReferences, newChar]);
     }
   };
+
   const handleCharacterUpdate = (id: string, field: keyof CharacterReference, value: any) => {
-    // ... (giữ nguyên nội dung hàm) ...
     setCharacterReferences(prev =>
       prev.map(char => (char.id === id ? { ...char, [field]: value } : char))
     );
   };
+  
   const handleImageUpload = async (id: string, file: File | null) => {
-    // ... (giữ nguyên nội dung hàm) ...
     if (!file) return;
+    // Kiểm tra loại tệp
+    if (!file.type.startsWith('image/')) {
+        alert("Chỉ chấp nhận tệp hình ảnh (JPEG, PNG, WEBP...).");
+        return;
+    }
     try {
       const { base64, type } = await fileToBase64(file);
       setCharacterReferences(prev =>
@@ -210,7 +208,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       console.error("Error converting file to base64:", error);
     }
   };
-  // --- KẾT THÚC HÀM HANDLER ---
   
   const handleAnalyze = async (id: string) => {
     const character = characterReferences.find(c => c.id === id);
@@ -221,7 +218,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
 
     handleCharacterUpdate(id, 'isAnalyzing', true);
     try {
-      // SỬA LỖI: Truyền `apiKey` vào hàm
+      // Yêu cầu số 2 của bạn đã được thực hiện ở đây:
       const description = await analyzeCharacterImage(character.imageBase64, character.fileType, apiKey);
       handleCharacterUpdate(id, 'description', description);
     } catch (error) {
@@ -233,33 +230,30 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     }
   };
 
-  // --- CÁC HÀM HANDLER KHÁC (Giữ nguyên) ---
   const handleSubmit = (e: React.FormEvent) => {
-    // ... (giữ nguyên nội dung hàm) ...
     e.preventDefault();
     if ((ideaInput.trim() || storyChapters.some(c => c.text.trim())) && !isLoading) {
       onSubmit();
     }
   };
+  
   const handleAddChapter = () => {
-    // ... (giữ nguyên nội dung hàm) ...
     setStoryChapters(prev => [
       ...prev,
       { id: `chapter-${Date.now()}`, text: '' }
     ]);
   };
+
   const handleChapterTextChange = (id: string, text: string) => {
-    // ... (giữ nguyên nội dung hàm) ...
     setStoryChapters(prev => prev.map(ch => ch.id === id ? { ...ch, text } : ch));
   };
-  // --- KẾT THÚC HÀM HANDLER ---
 
   const isSubmitDisabled = isLoading || (ideaInput.trim() === '' && !storyChapters.some(c => c.text.trim())) || (!generateImage && !generateMotion);
 
   return (
-    // TOÀN BỘ PHẦN JSX (return) BÊN DƯỚI ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN
-    // KHÔNG CẦN THAY ĐỔI GÌ Ở ĐÂY
     <form onSubmit={handleSubmit} className="space-y-6">
+       
+       {/* ... (Phần Phong cách & Tỉ lệ khung hình giữ nguyên) ... */}
        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div>
           <label className="text-[20px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-3 block">Phong cách (Chọn tối đa 3)</label>
@@ -309,8 +303,9 @@ const InputForm: React.FC<InputFormProps> = (props) => {
           )}
         </div>
       </div>
-      
-       <div className="mt-6">
+       
+      {/* ... (Phần Quản lý Dự án giữ nguyên) ... */}
+      <div className="mt-6">
             <h3 className="text-sm font-medium text-slate-300 mb-2">Quản lý Dự án & Tùy chọn Kịch bản</h3>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -341,6 +336,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
             </div>
         </div>
 
+      {/* ... (Phần Nhập/Chia kịch bản giữ nguyên) ... */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-6 pt-6 border-t border-slate-700">
         <div>
           <label htmlFor="long-story-input" className="block text-[17px] font-bold text-yellow-400 mb-2">Nhập câu chuyện</label>
@@ -465,7 +461,8 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
 
-
+      
+      {/* --- PHẦN NÂNG CẤP KÉO THẢ --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
            <div className="flex justify-between items-center mb-3">
@@ -502,19 +499,48 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                   <input type="text" value={char.name} onChange={(e) => handleCharacterUpdate(char.id, 'name', e.target.value)}
                     className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500"/>
                   
-                  <div className="relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed border-slate-600">
+                  {/* --- SỬA LỖI: THÊM KÉO THẢ VÀO ĐÂY --- */}
+                  <div 
+                    className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'}`}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDraggedCharId(char.id);
+                    }}
+                    onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDraggedCharId(null);
+                    }}
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDraggedCharId(null);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) {
+                            handleImageUpload(char.id, file);
+                        }
+                    }}
+                  >
+                    {/* Lớp phủ khi kéo */}
+                    {draggedCharId === char.id && (
+                        <div className="absolute inset-0 bg-cyan-500/30 flex items-center justify-center pointer-events-none z-10">
+                            <p className="text-cyan-200 font-semibold">Thả ảnh vào đây</p>
+                        </div>
+                    )}
+
                     {char.imageBase64 ? (
                       <>
                         <img src={`data:${char.fileType};base64,${char.imageBase64}`} alt={`Preview ${char.name}`} className="object-contain h-full w-full rounded-md"/>
                         <button type="button" onClick={() => handleCharacterUpdate(char.id, 'imageBase64', null)}
-                          className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 leading-none focus:outline-none">
+                          className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 leading-none focus:outline-none z-20">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       </>
                     ) : (
-                      <label className="cursor-pointer text-center text-slate-400">
+                      <label className="cursor-pointer text-center text-slate-400 p-4">
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <span className="text-xs mt-1 block">Tải lên nhân vật</span>
+                        <span className="text-xs mt-1 block">Tải lên hoặc Kéo thả</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(char.id, e.target.files ? e.target.files[0] : null)}/>
                       </label>
                     )}
@@ -527,14 +553,14 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                   </button>
 
                   <textarea rows={4} value={char.description} onChange={(e) => handleCharacterUpdate(char.id, 'description', e.target.value)}
-                    placeholder="Mô tả chi tiết nhân vật..."
+                    placeholder="Mô tả chi tiết nhân vật (AI sẽ điền vào đây)..."
                     className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md p-2 text-sm text-yellow-200 placeholder-yellow-400/50 focus:ring-1 focus:ring-yellow-400"
                     disabled={isLoading}
                   />
                 </div>
               ))}
               {characterReferences.length < 5 && (
-                 <button type="button" onClick={handleAddCharacter} className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 hover:border-slate-500 transition-colors">
+                 <button type="button" onClick={handleAddCharacter} className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 hover:border-slate-500 transition-colors min-h-[150px]">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                     <span className="mt-2 text-sm font-medium">Thêm nhân vật</span>
                  </button>
@@ -543,6 +569,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
        
+      {/* ... (Phần Tùy chỉnh chi tiết & Nút Submit giữ nguyên) ... */}
       <div className="mt-6 pt-2 p-4 bg-slate-800/50 border border-slate-700 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-200">Tùy chỉnh chi tiết</h3>
