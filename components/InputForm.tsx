@@ -98,7 +98,7 @@ const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
 
 const InputForm: React.FC<InputFormProps> = (props) => {
   const {
-      apiKey, // <-- ĐÃ THÊM
+      apiKey, 
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
       generateImage, generateMotion, includeMusic, dialogueLanguage,
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
@@ -121,7 +121,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
 
   const [focusedChapterId, setFocusedChapterId] = useState<string | null>(null);
   
-  // --- THÊM MỚI: State để quản lý kéo-thả ---
   const [draggedCharId, setDraggedCharId] = useState<string | null>(null);
   
   const importFileRef = useRef<HTMLInputElement>(null);
@@ -131,15 +130,12 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     const isSelected = newSelection.includes(prompt);
 
     if (isSelected) {
-        // Deselect: remove it from the array
         const index = newSelection.indexOf(prompt);
         newSelection.splice(index, 1);
     } else {
-        // Select: add it if we are under the limit of 3
         if (newSelection.length < 3) {
             newSelection.push(prompt);
         } else {
-            // Optional: alert user they can only select 3
             alert("Bạn chỉ có thể chọn tối đa 3 phong cách.");
         }
     }
@@ -194,7 +190,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   
   const handleImageUpload = async (id: string, file: File | null) => {
     if (!file) return;
-    // Kiểm tra loại tệp
     if (!file.type.startsWith('image/')) {
         alert("Chỉ chấp nhận tệp hình ảnh (JPEG, PNG, WEBP...).");
         return;
@@ -218,7 +213,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
 
     handleCharacterUpdate(id, 'isAnalyzing', true);
     try {
-      // Yêu cầu số 2 của bạn đã được thực hiện ở đây:
       const description = await analyzeCharacterImage(character.imageBase64, character.fileType, apiKey);
       handleCharacterUpdate(id, 'description', description);
     } catch (error) {
@@ -462,7 +456,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       </div>
 
       
-      {/* --- PHẦN NÂNG CẤP KÉO THẢ --- */}
+      {/* ... (Phần Định nghĩa nhân vật & Tham chiếu nhân vật giữ nguyên) ... */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
            <div className="flex justify-between items-center mb-3">
@@ -499,7 +493,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                   <input type="text" value={char.name} onChange={(e) => handleCharacterUpdate(char.id, 'name', e.target.value)}
                     className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500"/>
                   
-                  {/* --- SỬA LỖI: THÊM KÉO THẢ VÀO ĐÂY --- */}
                   <div 
                     className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'}`}
                     onDragOver={(e) => {
@@ -522,7 +515,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                         }
                     }}
                   >
-                    {/* Lớp phủ khi kéo */}
                     {draggedCharId === char.id && (
                         <div className="absolute inset-0 bg-cyan-500/30 flex items-center justify-center pointer-events-none z-10">
                             <p className="text-cyan-200 font-semibold">Thả ảnh vào đây</p>
@@ -569,7 +561,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
        
-      {/* ... (Phần Tùy chỉnh chi tiết & Nút Submit giữ nguyên) ... */}
+      {/* --- SỬA LỖI: PHẦN NGÔN NGỮ ĐỐI THOẠI --- */}
       <div className="mt-6 pt-2 p-4 bg-slate-800/50 border border-slate-700 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-200">Tùy chỉnh chi tiết</h3>
@@ -609,15 +601,24 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                   </div>
               </label>
           </div>
+          
+          {/* --- BẮT ĐẦU SỬA LỖI NGÔN NGỮ --- */}
           <div className="flex items-center justify-between">
-              <label htmlFor="dialogue-language" className="text-sm font-medium text-slate-300">Ngôn ngữ đối thoại</label>
-              <select id="dialogue-language" value={dialogueLanguage} onChange={(e) => setDialogueLanguage(e.target.value)}
-                className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500" >
-                <option value="Vietnamese">Tiếng Việt</option>
-                <option value="English">Tiếng Anh</option>
-                <option value="Japanese">Tiếng Nhật</option>
-              </select>
+              <label htmlFor="dialogue-language" className="flex items-center text-sm font-medium text-slate-300">
+                Ngôn ngữ đối thoại
+                <InfoTooltip text="Nhập tên ngôn ngữ bất kỳ mà Gemini hỗ trợ (ví dụ: English, Spanish, Korean, Tiếng Pháp...)" />
+              </label>
+              <input 
+                type="text"
+                id="dialogue-language" 
+                value={dialogueLanguage} 
+                onChange={(e) => setDialogueLanguage(e.target.value)}
+                placeholder="Ví dụ: English, Spanish, Korean..."
+                className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500 placeholder-slate-400" 
+              />
           </div>
+          {/* --- KẾT THÚC SỬA LỖI NGÔN NGỮ --- */}
+
       </div>
     </form>
   );
