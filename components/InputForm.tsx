@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { StyleInfo, CharacterReference, StoryChapter } from '../types';
 import { analyzeCharacterImage } from '../services/geminiService';
 
+
 interface InputFormProps {
   // State props
   apiKey: string;
@@ -25,6 +26,10 @@ interface InputFormProps {
   storyChapters: StoryChapter[];
   splitMode: 'range' | 'number';
   numberOfChapters: string;
+  
+  // --- THÊM MỚI: Props cho Checkbox ---
+  characterSource: 'definition' | 'references';
+  setCharacterSource: (source: 'definition' | 'references') => void;
 
 
   // Handler props
@@ -55,6 +60,7 @@ interface InputFormProps {
 }
 
 
+// (fileToBase64 và các hằng số defaultStyles, defaultAspectRatios giữ nguyên)
 const fileToBase64 = (file: File): Promise<{base64: string, type: string}> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -98,15 +104,17 @@ const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
 
 const InputForm: React.FC<InputFormProps> = (props) => {
   const {
-      apiKey, 
+      apiKey,
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
       generateImage, generateMotion, includeMusic, dialogueLanguage,
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
       splitMode, numberOfChapters,
+      characterSource, // <-- NHẬN PROP MỚI
       setMode, setIdeaInput, setLongStoryInput, setChapterSplitRange, setSelectedStylePrompts, setCharacterReferences, setCharacterDefinition,
       setAspectRatio, setGenerateImage, setGenerateMotion, setIncludeMusic,
       setDialogueLanguage, setStyles, setAspectRatios,
       setStoryChapters, setSplitMode, setNumberOfChapters,
+      setCharacterSource, // <-- NHẬN PROP MỚI
       onSubmit, onExport, onImport,
       onSplitStory, onGenerateCharacterDefinition
   } = props;
@@ -125,6 +133,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   
   const importFileRef = useRef<HTMLInputElement>(null);
 
+  // (Các hàm handler từ handleStyleClick đến handleChapterTextChange giữ nguyên)
   const handleStyleClick = (prompt: string) => {
     const newSelection = [...selectedStylePrompts];
     const isSelected = newSelection.includes(prompt);
@@ -141,7 +150,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     }
     setSelectedStylePrompts(newSelection);
   };
-
   const handleSaveStyle = () => {
     if (!newStyleName.trim() || !newStylePrompt.trim()) return;
     const newStyle: StyleInfo = { name: newStyleName.trim(), prompt: newStylePrompt.trim(), definition: 'Phong cách tùy chỉnh do người dùng thêm vào.' };
@@ -154,7 +162,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     setNewStylePrompt('');
     setIsAddingStyle(false);
   };
-
   const handleSaveAspectRatio = () => {
     if (!newAspectRatioName.trim() || !newAspectRatioValue.trim()) return;
     const newRatio = { name: newAspectRatioName.trim(), value: newAspectRatioValue.trim() };
@@ -167,7 +174,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     setNewAspectRatioValue('');
     setIsAddingAspectRatio(false);
   };
-  
   const handleAddCharacter = () => {
     if (characterReferences.length < 5) {
       const newChar: CharacterReference = {
@@ -181,13 +187,11 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       setCharacterReferences([...characterReferences, newChar]);
     }
   };
-
   const handleCharacterUpdate = (id: string, field: keyof CharacterReference, value: any) => {
     setCharacterReferences(prev =>
       prev.map(char => (char.id === id ? { ...char, [field]: value } : char))
     );
   };
-  
   const handleImageUpload = async (id: string, file: File | null) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -203,7 +207,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       console.error("Error converting file to base64:", error);
     }
   };
-  
   const handleAnalyze = async (id: string) => {
     const character = characterReferences.find(c => c.id === id);
     if (!character || !character.imageBase64 || !character.fileType) {
@@ -223,25 +226,21 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       handleCharacterUpdate(id, 'isAnalyzing', false);
     }
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if ((ideaInput.trim() || storyChapters.some(c => c.text.trim())) && !isLoading) {
       onSubmit();
     }
   };
-  
   const handleAddChapter = () => {
     setStoryChapters(prev => [
       ...prev,
       { id: `chapter-${Date.now()}`, text: '' }
     ]);
   };
-
   const handleChapterTextChange = (id: string, text: string) => {
     setStoryChapters(prev => prev.map(ch => ch.id === id ? { ...ch, text } : ch));
   };
-
   const isSubmitDisabled = isLoading || (ideaInput.trim() === '' && !storyChapters.some(c => c.text.trim())) || (!generateImage && !generateMotion);
 
   return (
@@ -456,11 +455,25 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       </div>
 
       
-      {/* ... (Phần Định nghĩa nhân vật & Tham chiếu nhân vật giữ nguyên) ... */}
+      {/* --- SỬA LỖI: THÊM CHECKBOX VÀO ĐÂY --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
            <div className="flex justify-between items-center mb-3">
-             <h3 className="text-lg font-semibold text-green-400">Định nghĩa nhân vật</h3>
+             
+             {/* Sửa Label thành Checkbox */}
+             <label htmlFor="char-source-definition" className="flex items-center cursor-pointer">
+                <input 
+                  type="radio" 
+                  id="char-source-definition" 
+                  name="characterSource"
+                  checked={characterSource === 'definition'}
+                  onChange={() => setCharacterSource('definition')}
+                  className="h-4 w-4 text-green-500 bg-slate-700 border-slate-600 focus:ring-green-600"
+                />
+                <h3 className="ml-2 text-lg font-semibold text-green-400">Định nghĩa nhân vật</h3>
+             </label>
+             {/* Kết thúc sửa Label */}
+
              <button
                 type="button"
                 onClick={onGenerateCharacterDefinition}
@@ -479,26 +492,41 @@ const InputForm: React.FC<InputFormProps> = (props) => {
             rows={15} 
             value={characterDefinition} 
             onChange={(e) => setCharacterDefinition(e.target.value)}
-            placeholder="Mô tả chi tiết về bối cảnh, tính cách, hoặc các đặc điểm phi ngoại hình của nhân vật để AI hiểu rõ hơn..."
-            className="w-full h-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-            disabled={isLoading}
+            placeholder="Dùng nút 'Tạo định nghĩa' ở trên, hoặc tự viết định nghĩa nhân vật (bằng Tiếng Việt) vào đây..."
+            className={`w-full h-full bg-slate-800/50 border rounded-lg p-3 text-sm text-slate-200 placeholder-slate-400 focus:ring-2  focus:border-green-500 transition-colors ${characterSource === 'definition' ? 'border-green-500 ring-1 ring-green-500' : 'border-slate-700'}`}
+            disabled={isLoading || characterSource !== 'definition'}
           />
         </div>
 
         <div>
-            <h3 className="text-lg font-semibold text-green-400 mb-3">Tham Chiếu Nhân Vật (Tùy chọn)</h3>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {/* Sửa Label thành Checkbox */}
+            <label htmlFor="char-source-references" className="flex items-center cursor-pointer mb-3">
+              <input 
+                type="radio" 
+                id="char-source-references" 
+                name="characterSource"
+                checked={characterSource === 'references'}
+                onChange={() => setCharacterSource('references')}
+                className="h-4 w-4 text-green-500 bg-slate-700 border-slate-600 focus:ring-green-600"
+              />
+              <h3 className="ml-2 text-lg font-semibold text-green-400">Tham Chiếu Nhân Vật (Tùy chọn)</h3>
+            </label>
+            {/* Kết thúc sửa Label */}
+
+            <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 rounded-lg border transition-colors ${characterSource === 'references' ? 'border-green-500 ring-1 ring-green-500' : 'border-slate-700 border-dashed'}`}>
               {characterReferences.map((char) => (
-                <div key={char.id} className="bg-slate-800/50 p-4 border border-slate-700 rounded-lg space-y-3">
+                <div key={char.id} className={`bg-slate-800/50 p-4 border border-slate-700 rounded-lg space-y-3 ${isLoading || characterSource !== 'references' ? 'opacity-50' : ''}`}>
                   <input type="text" value={char.name} onChange={(e) => handleCharacterUpdate(char.id, 'name', e.target.value)}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500"/>
+                    className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500"
+                    disabled={isLoading || characterSource !== 'references'}
+                  />
                   
                   <div 
-                    className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'}`}
+                    className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'} ${characterSource !== 'references' ? 'cursor-not-allowed' : ''}`}
                     onDragOver={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setDraggedCharId(char.id);
+                        if (characterSource === 'references') setDraggedCharId(char.id);
                     }}
                     onDragLeave={(e) => {
                         e.preventDefault();
@@ -509,9 +537,11 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setDraggedCharId(null);
-                        const file = e.dataTransfer.files?.[0];
-                        if (file) {
-                            handleImageUpload(char.id, file);
+                        if (characterSource === 'references') {
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) {
+                              handleImageUpload(char.id, file);
+                          }
                         }
                     }}
                   >
@@ -525,34 +555,47 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                       <>
                         <img src={`data:${char.fileType};base64,${char.imageBase64}`} alt={`Preview ${char.name}`} className="object-contain h-full w-full rounded-md"/>
                         <button type="button" onClick={() => handleCharacterUpdate(char.id, 'imageBase64', null)}
-                          className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 leading-none focus:outline-none z-20">
+                          className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 leading-none focus:outline-none z-20"
+                          disabled={isLoading || characterSource !== 'references'}
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       </>
                     ) : (
-                      <label className="cursor-pointer text-center text-slate-400 p-4">
+                      <label className={`${characterSource === 'references' ? 'cursor-pointer' : 'cursor-not-allowed'} text-center text-slate-400 p-4`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         <span className="text-xs mt-1 block">Tải lên hoặc Kéo thả</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(char.id, e.target.files ? e.target.files[0] : null)}/>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => handleImageUpload(char.id, e.target.files ? e.target.files[0] : null)}
+                          disabled={isLoading || characterSource !== 'references'}
+                        />
                       </label>
                     )}
                   </div>
                   
-                  <button type="button" onClick={() => handleAnalyze(char.id)} disabled={!char.imageBase64 || char.isAnalyzing || isLoading}
+                  <button type="button" onClick={() => handleAnalyze(char.id)} disabled={!char.imageBase64 || char.isAnalyzing || isLoading || characterSource !== 'references'}
                     className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 disabled:bg-slate-500 disabled:cursor-not-allowed">
                     {char.isAnalyzing ? <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : null}
                     Phân tích bằng AI
                   </button>
 
                   <textarea rows={4} value={char.description} onChange={(e) => handleCharacterUpdate(char.id, 'description', e.target.value)}
-                    placeholder="Mô tả chi tiết nhân vật (AI sẽ điền vào đây)..."
+                    placeholder="AI sẽ điền mô tả Tiếng Việt vào đây..."
                     className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md p-2 text-sm text-yellow-200 placeholder-yellow-400/50 focus:ring-1 focus:ring-yellow-400"
-                    disabled={isLoading}
+                    disabled={isLoading || characterSource !== 'references'}
                   />
                 </div>
               ))}
               {characterReferences.length < 5 && (
-                 <button type="button" onClick={handleAddCharacter} className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 hover:border-slate-500 transition-colors min-h-[150px]">
+                 <button 
+                    type="button" 
+                    onClick={handleAddCharacter} 
+                    className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 hover:border-slate-500 transition-colors min-h-[150px] disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading || characterSource !== 'references'}
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                     <span className="mt-2 text-sm font-medium">Thêm nhân vật</span>
                  </button>
@@ -561,7 +604,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
        
-      {/* --- SỬA LỖI: PHẦN NGÔN NGỮ ĐỐI THOẠI --- */}
+      {/* ... (Phần Tùy chỉnh chi tiết & Nút Submit giữ nguyên) ... */}
       <div className="mt-6 pt-2 p-4 bg-slate-800/50 border border-slate-700 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-200">Tùy chỉnh chi tiết</h3>
@@ -601,8 +644,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                   </div>
               </label>
           </div>
-          
-          {/* --- BẮT ĐẦU SỬA LỖI NGÔN NGỮ --- */}
           <div className="flex items-center justify-between">
               <label htmlFor="dialogue-language" className="flex items-center text-sm font-medium text-slate-300">
                 Ngôn ngữ đối thoại
@@ -617,8 +658,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                 className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500 placeholder-slate-400" 
               />
           </div>
-          {/* --- KẾT THÚC SỬA LỖI NGÔN NGỮ --- */}
-
       </div>
     </form>
   );
