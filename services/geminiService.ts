@@ -2,19 +2,17 @@ import { GoogleGenAI, Part, Modality, Type, Content } from "@google/genai";
 import type { Script, Scene, CharacterReference, StorytellingScene } from '../types';
 
 // =========================================================================
-// === SỬA LỖI: CẬP NHẬT PROMPT ĐỊNH NGHĨA NHÂN VẬT (v10.0 - Theo yêu cầu mới của bạn) ===
+// === SỬA LỖI: CẬP NHẬT PROMPT ĐỊNH NGHĨA NHÂN VẬT (v10.0) ===
 // =========================================================================
-const CHARACTER_DEFINITION_SYSTEM_PROMPT = `Mô tả chi tiết, nhất quán, tập trung vào các yếu tố hình ảnh của các nhân vật trong truyện để dễ dàng sử dụng làm cơ sở cho prompt tạo ảnh (ví dụ: với Midjourney, Stable Diffusion hoặc DALL-E). Điều này giúp nhân vật trông giống nhau qua nhiều hình ảnh khác nhau.
+const CHARACTER_DEFINITION_SYSTEM_PROMPT = `Bạn là một chuyên gia phân tích kịch bản với nhiệm vụ tối quan trọng: đọc toàn bộ kịch bản/câu chuyện được cung cấp và tạo ra một bản "Định nghĩa nhân vật" chi tiết cho TẤT CẢ các nhân vật.
 
-Yêu cầu:
-1.  **Phân tích TẤT CẢ nhân vật:** Đọc toàn bộ câu chuyện và tạo định nghĩa cho TỪNG NHÂN VẬT riêng biệt.
-2.  **Tập trung vào Hình ảnh:** Ưu tiên các yếu tố hình ảnh (visual elements) để tạo prompt.
-3.  **Các yếu tố BẮT BUỘC bao gồm:**
-    * **Ngoại hình vật lý:** Chủng tộc, độ tuổi, Chiều cao, cân nặng, hình dáng cơ thể, màu tóc/mắt/da, đặc điểm khuôn mặt (mũi cao, má lúm, sẹo...).
-    * **Trang phục và phụ kiện:** Phong cách mặc (cổ điển, hiện đại), màu sắc chính, vật dụng thường mang (kiếng, mũ, vũ khí nếu là fantasy).
-    * **Biểu cảm và tư thế (Tính cách ảnh hưởng):** Tính cách ảnh hưởng đến hình ảnh (ví dụ: nhân vật vui vẻ thì cười tươi, nghiêm túc thì mặt lạnh).
-    * **Yếu tố nhất quán (Key Visual Traits):** Thêm một mục "Đặc điểm nhận dạng chính" (key visual traits) để lặp lại trong prompt, ví dụ: "luôn có mái tóc đỏ dài, mắt xanh, và chiếc vòng cổ bạc".
-4.  **Tránh:** Không mô tả trừu tượng (như chỉ tính cách mà không liên kết với hình ảnh).
+**Quy tắc Vàng để Tạo Nhân vật Nhất quán (QUAN TRỌNG NHẤT):**
+1.  **Xác định TẤT CẢ:** Đọc kỹ và xác định TẤT CẢ các nhân vật (chính và phụ) xuất hiện trong câu chuyện.
+2.  **Mô tả chi tiết và cụ thể:** Với MỖI nhân vật, bản định nghĩa PHẢI chứa thông tin đầy đủ và chính xác nhất có thể (nếu có trong truyện) về:
+    * **Thông tin cơ bản:** Tên, Giới tính, Tuổi (ví dụ: 70 tuổi), Nguồn gốc/Quốc tịch (ví dụ: người châu Á, người Nhật Bản).
+    * **Ngoại hình Cốt lõi (Immutable):** Chiều cao (ví dụ: cao, thấp, 1m70), Cân nặng (ví dụ: gầy gò, vạm vỡ), Màu da, Làn da (ví dụ: nhăn nheo, mịn màng), Kiểu tóc, Màu tóc, Màu mắt, Đặc điểm khuôn mặt (ví dụ: nếp nhăn, quầng thâm, sẹo, râu...).
+    * **Ngoại hình Biến đổi (Mutable):** Gợi ý về trang phục thường ngày (ví dụ: "thường mặc áo khoác xám cũ", "luôn mặc vest công sở").
+3.  **Định dạng:** Trả về một danh sách, mỗi nhân vật một dòng, theo định dạng: \`Tên Nhân vật: Mô tả chi tiết...\`.
 
 **Yêu cầu đầu ra BẮT BUỘC:**
 -   Ngôn ngữ của đầu ra phải là **Tiếng Việt**.
@@ -35,7 +33,7 @@ export const generateCharacterDefinition = async (
             model: "gemini-2.5-pro",
             contents: [{ parts: [{ text: scriptText }] }],
             config: {
-                systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT, // <-- Đã dùng prompt mới
+                systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT, // <-- Đã dùng prompt đúng
             }
         });
         const responseText = response.text;
@@ -51,7 +49,7 @@ export const generateCharacterDefinition = async (
 };
 
 // =========================================================================
-// === SỬA LỖI: CẬP NHẬT PROMPT HỆ THỐNG (PHIÊN BẢN 10.0 - YÊU CẦU MỚI) ===
+// === (PHẦN CÒN LẠI CỦA TỆP LÀ BẢN 10.0 ĐÃ SỬA) ===
 // =========================================================================
 
 const SYSTEM_PROMPT_FROM_IDEA = `
