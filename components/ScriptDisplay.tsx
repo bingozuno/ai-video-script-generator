@@ -8,13 +8,15 @@ interface ScriptDisplayProps {
   isLoading: boolean;
   error: string | null;
   onGenerateImage: (sceneIndex: number) => void;
+  // --- THÊM PROP MỚI ---
+  onRegeneratePrompt: (sceneIndex: number) => void;
   onOpenImage: (src: string, name: string) => void;
 }
 
-const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, isLoading, error, onGenerateImage, onOpenImage }) => {
+const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, isLoading, error, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
 
+  // (Các hàm downloadFile, handleDownloadChapters... giữ nguyên)
   const downloadFile = (filename: string, content: string, mimeType: string) => {
-    // Add BOM for UTF-8 compatibility in Excel, especially for CSV
     const bom = mimeType.includes('csv') ? '\uFEFF' : '';
     const blob = new Blob([bom + content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -50,35 +52,19 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, is
       alert("Không có phân cảnh chi tiết để tải về.");
       return;
     };
-    
-    // Fix: Re-implemented for robustness to ensure prompt content is always included.
     const header = '"STT","Prompt","Trạng Thái"\n';
-    
     const escapeCsvField = (field: string) => `"${(field || '').replace(/"/g, '""')}"`;
-    
     const rows = script.scenes.map((scene, index) => {
       const imagePrompt = scene.imagePrompt || '';
       const motionPrompt = scene.motionPrompt || '';
-
       let motionPromptObject: any;
-      try {
-        motionPromptObject = JSON.parse(motionPrompt);
-      } catch (e) {
-        motionPromptObject = { "info": motionPrompt };
-      }
-
-      const combinedPrompt = JSON.stringify({
-        image_prompt: imagePrompt,
-        motion_prompt: motionPromptObject
-      }, null, 2);
-      
+      try { motionPromptObject = JSON.parse(motionPrompt); } catch (e) { motionPromptObject = { "info": motionPrompt }; }
+      const combinedPrompt = JSON.stringify({ image_prompt: imagePrompt, motion_prompt: motionPromptObject }, null, 2);
       const stt = escapeCsvField(String(index + 1));
       const promptJson = escapeCsvField(combinedPrompt);
       const trangThai = escapeCsvField('');
-      
       return [stt, promptJson, trangThai].join(',');
     }).join('\n');
-    
     const csvContent = header + rows;
     downloadFile('prompts_video.csv', csvContent, 'text/csv;charset=utf-8;');
   };
@@ -116,7 +102,6 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, is
               onClick={handleDownloadChapters}
               disabled={storyChapters.length === 0}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-slate-900 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-yellow-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-              title="Tải về toàn bộ các chương dưới dạng file .txt"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Tải kịch bản chương
@@ -125,7 +110,6 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, is
               onClick={handleDownloadTxt}
               disabled={!script}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-green-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-              title="Tải toàn bộ prompt tạo ảnh dưới dạng file .txt"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Tải Prompt Tạo Ảnh File TXT
@@ -134,14 +118,14 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, is
               onClick={handleDownloadExcel}
               disabled={!script}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-pink-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-              title="Tải bảng quản lý prompt dưới dạng file .csv (mở bằng Excel)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               Tải File Excel
             </button>
           </div>
         </div>
-        <SceneTable scenes={scenes} onGenerateImage={onGenerateImage} onOpenImage={onOpenImage} />
+        {/* TRUYỀN HÀM onRegeneratePrompt XUỐNG SCENE TABLE */}
+        <SceneTable scenes={scenes} onGenerateImage={onGenerateImage} onRegeneratePrompt={onRegeneratePrompt} onOpenImage={onOpenImage} />
          {scenes.length === 0 && !isLoading && (
             <div className="text-center py-10 border-2 border-dashed border-slate-700 rounded-lg mt-4">
                 <p className="text-slate-500">Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.</p>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Scene } from '../types';
 import CodeBlock from './CodeBlock';
@@ -6,6 +5,7 @@ import CodeBlock from './CodeBlock';
 interface SceneTableProps {
   scenes: Scene[];
   onGenerateImage: (sceneIndex: number) => void;
+  onRegeneratePrompt: (sceneIndex: number) => void; // <-- THÊM PROP MỚI
   onOpenImage: (src: string, name: string) => void;
 }
 
@@ -29,7 +29,7 @@ const ImageGenerationPlaceholder: React.FC<{ isGenerating: boolean }> = ({ isGen
 );
 
 
-const SceneTable: React.FC<SceneTableProps> = ({ scenes, onGenerateImage, onOpenImage }) => {
+const SceneTable: React.FC<SceneTableProps> = ({ scenes, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-700 border border-slate-700">
@@ -52,14 +52,31 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, onGenerateImage, onOpen
               <td className="px-4 py-4 text-sm text-slate-300 align-top">
                 <div className="flex flex-col space-y-3">
                   <CodeBlock code={scene.imagePrompt} />
-                  <button 
-                    onClick={() => onGenerateImage(index)}
-                    disabled={scene.isGeneratingImages}
-                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:bg-slate-500 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-green-500"
-                  >
-                     {scene.isGeneratingImages && <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
-                    {scene.isGeneratingImages ? 'Đang tạo...' : 'Tạo ảnh'}
-                  </button>
+                  <div className="flex space-x-2">
+                      {/* NÚT TẠO ẢNH CŨ */}
+                      <button 
+                        onClick={() => onGenerateImage(index)}
+                        disabled={scene.isGeneratingImages}
+                        className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-slate-500 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {scene.isGeneratingImages && <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                        {scene.isGeneratingImages ? 'Đang tạo...' : 'Tạo ảnh'}
+                      </button>
+
+                      {/* NÚT TẠO LẠI MỚI (MÀU XANH LÁ) */}
+                      <button 
+                        onClick={() => onRegeneratePrompt(index)}
+                        disabled={scene.isRegeneratingPrompt}
+                        className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:bg-slate-500 disabled:cursor-not-allowed transition-colors"
+                        title="Tạo lại Prompt để sửa lỗi nhân vật"
+                      >
+                         {scene.isRegeneratingPrompt ? (
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                         ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                         )}
+                      </button>
+                  </div>
                 </div>
               </td>
               <td className="px-4 py-4 text-sm text-slate-300 align-top">

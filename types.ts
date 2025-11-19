@@ -6,6 +6,7 @@ export interface Scene {
   motionPrompt: string;
   generatedImages?: string[];
   isGeneratingImages?: boolean;
+  isRegeneratingPrompt?: boolean; // <-- THÊM DÒNG NÀY
 }
 
 export interface Script {
@@ -30,7 +31,7 @@ export interface CharacterReference {
 export interface ProjectState {
   mode: 'idea' | 'script';
   ideaInput: string;
-  longStoryInput: string; // Add new state for the story input
+  longStoryInput: string;
   storyChapters: StoryChapter[];
   selectedStylePrompts?: string[];
   characterReferences: CharacterReference[];

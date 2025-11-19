@@ -2,23 +2,24 @@ import { GoogleGenAI, Part, Modality, Type, Content } from "@google/genai";
 import type { Script, Scene, CharacterReference, StorytellingScene } from '../types';
 
 // =========================================================================
-// === SỬA LỖI: CẬP NHẬT PROMPT ĐỊNH NGHĨA NHÂN VẬT (v10.0) ===
+// === CẬP NHẬT PROMPT ĐỊNH NGHĨA NHÂN VẬT (v10.0) ===
 // =========================================================================
-const CHARACTER_DEFINITION_SYSTEM_PROMPT = `Bạn là một chuyên gia phân tích kịch bản với nhiệm vụ tối quan trọng: đọc toàn bộ kịch bản/câu chuyện được cung cấp và tạo ra một bản "Định nghĩa nhân vật" chi tiết cho TẤT CẢ các nhân vật.
+const CHARACTER_DEFINITION_SYSTEM_PROMPT = `Mô tả chi tiết, nhất quán, tập trung vào các yếu tố hình ảnh của các nhân vật trong truyện để dễ dàng sử dụng làm cơ sở cho prompt tạo ảnh (ví dụ: với Midjourney, Stable Diffusion hoặc DALL-E). Điều này giúp nhân vật trông giống nhau qua nhiều hình ảnh khác nhau.
 
-**Quy tắc Vàng để Tạo Nhân vật Nhất quán (QUAN TRỌNG NHẤT):**
-1.  **Xác định TẤT CẢ:** Đọc kỹ và xác định TẤT CẢ các nhân vật (chính và phụ) xuất hiện trong câu chuyện.
-2.  **Mô tả chi tiết và cụ thể:** Với MỖI nhân vật, bản định nghĩa PHẢI chứa thông tin đầy đủ và chính xác nhất có thể (nếu có trong truyện) về:
-    * **Thông tin cơ bản:** Tên, Giới tính, Tuổi (ví dụ: 70 tuổi), Nguồn gốc/Quốc tịch (ví dụ: người châu Á, người Nhật Bản).
-    * **Ngoại hình Cốt lõi (Immutable):** Chiều cao (ví dụ: cao, thấp, 1m70), Cân nặng (ví dụ: gầy gò, vạm vỡ), Màu da, Làn da (ví dụ: nhăn nheo, mịn màng), Kiểu tóc, Màu tóc, Màu mắt, Đặc điểm khuôn mặt (ví dụ: nếp nhăn, quầng thâm, sẹo, râu...).
-    * **Ngoại hình Biến đổi (Mutable):** Gợi ý về trang phục thường ngày (ví dụ: "thường mặc áo khoác xám cũ", "luôn mặc vest công sở").
-3.  **Định dạng:** Trả về một danh sách, mỗi nhân vật một dòng, theo định dạng: \`Tên Nhân vật: Mô tả chi tiết...\`.
+Yêu cầu:
+1.  **Phân tích TẤT CẢ nhân vật:** Đọc toàn bộ câu chuyện và tạo định nghĩa cho TỪNG NHÂN VẬT riêng biệt.
+2.  **Tập trung vào Hình ảnh:** Ưu tiên các yếu tố hình ảnh (visual elements) để tạo prompt.
+3.  **Các yếu tố BẮT BUỘC bao gồm:**
+    * **Ngoại hình vật lý:** Chủng tộc, độ tuổi, Chiều cao, cân nặng, hình dáng cơ thể, màu tóc/mắt/da, đặc điểm khuôn mặt (mũi cao, má lúm, sẹo...).
+    * **Trang phục và phụ kiện:** Phong cách mặc (cổ điển, hiện đại), màu sắc chính, vật dụng thường mang (kiếng, mũ, vũ khí nếu là fantasy).
+    * **Biểu cảm và tư thế (Tính cách ảnh hưởng):** Tính cách ảnh hưởng đến hình ảnh (ví dụ: nhân vật vui vẻ thì cười tươi, nghiêm túc thì mặt lạnh).
+    * **Yếu tố nhất quán (Key Visual Traits):** Thêm một mục "Đặc điểm nhận dạng chính" (key visual traits) để lặp lại trong prompt, ví dụ: "luôn có mái tóc đỏ dài, mắt xanh, và chiếc vòng cổ bạc".
+4.  **Tránh:** Không mô tả trừu tượng (như chỉ tính cách mà không liên kết với hình ảnh).
 
 **Yêu cầu đầu ra BẮT BUỘC:**
 -   Ngôn ngữ của đầu ra phải là **Tiếng Việt**.
 -   **CHỈ** trả về danh sách định nghĩa nhân vật.
 -   **TUYỆT ĐỐI KHÔNG** bao gồm bất kỳ lời chào hỏi, lời giải thích, tiêu đề markdown, hay quá trình tư duy nào (KHÔNG VIẾT "Chắc chắn rồi! Dưới đây là..."!).`;
-// =========================================================================
 
 
 export const generateCharacterDefinition = async (
@@ -33,7 +34,7 @@ export const generateCharacterDefinition = async (
             model: "gemini-2.5-pro",
             contents: [{ parts: [{ text: scriptText }] }],
             config: {
-                systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT, // <-- Đã dùng prompt đúng
+                systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT,
             }
         });
         const responseText = response.text;
@@ -49,7 +50,7 @@ export const generateCharacterDefinition = async (
 };
 
 // =========================================================================
-// === (PHẦN CÒN LẠI CỦA TỆP LÀ BẢN 10.0 ĐÃ SỬA) ===
+// === CẬP NHẬT PROMPT HỆ THỐNG (PHIÊN BẢN 10.0 - YÊU CẦU MỚI NHẤT) ===
 // =========================================================================
 
 const SYSTEM_PROMPT_FROM_IDEA = `
@@ -92,14 +93,14 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
 **QUY TẮC BỔ SUNG:**
 * **Số lượng Phân cảnh:** Dựa trên ý tưởng được cung cấp, hãy tự quyết định số lượng phân cảnh phù hợp.
 * **Phong cách:** CHỈ SỬ DỤNG phong cách đã được cung cấp (ví dụ: Photorealistic...).
-* **Âm nhạc:** Nếu người dùng yêu cầu, hãy thêm một key \`"music"\` vào JSON của "Prompt Tạo Chuyện động".
+* **Âm nhạc:** Nếu người dùng yêu cầu, hãy thêm một key \`"music"\` vào JSON của "Prompt Tạo Chuyển động".
 * **Ngôn ngữ đối thoại:** Nếu có hội thoại, tất cả các câu thoại trong prompt phải được viết bằng ngôn ngữ do người dùng chỉ định.
 
 {{PROMPT_GENERATION_INSTRUCTIONS}}
 
 **Tiêu chuẩn đầu ra BẮT BUỘC:**
 (Giữ nguyên các tiêu chuẩn về Bảng Phân cảnh, cấm lời chào, v.v.)
-1.  **Bảng Phân cảnh:** Trình bày dưới dạng bảng Markdown. BẮT ĐẦU VỚI DÒNG "### Bảng Phân cảnh". Bảng phải có 5 cột với tiêu đề chính xác như sau: "STT/Phân cảnh", "Thời gian (8 giây)", "Mô tả Kịch bản Chi tiết", "Prompt Tạo Ảnh (Whisk AI)", "Prompt Tạo Chuyện động (Veo 3.1)".
+1.  **Bảng Phân cảnh:** Trình bày dưới dạng bảng Markdown. BẮT ĐẦU VỚI DÒNG "### Bảng Phân cảnh". Bảng phải có 5 cột với tiêu đề chính xác như sau: "STT/Phân cảnh", "Thời gian (8 giây)", "Mô tả Kịch bản Chi tiết", "Prompt Tạo Ảnh (Whisk AI)", "Prompt Tạo Chuyển động (Veo 3.1)".
     * **Prompt Tạo Ảnh (Whisk AI):** Prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên.
     * **Prompt Tạo Chuyển động (Veo 3.1):** Prompt riêng biệt bằng **TIẾNG ANH**, phải là một chuỗi JSON hợp lệ.
         * Nếu có nhân vật, BẮT BUỘC phải nhúng mô tả (đã dịch và sửa) vào key \`character_definitions\` trong JSON.
@@ -130,7 +131,7 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
     * BẮT BUỘC **DÁN (PASTE)** toàn bộ bản dịch Tiếng Anh 100% chi tiết đó (bao gồm ngoại hình, trang phục, key visual traits) vào đầu prompt. Đây là "anchor" (neo) để AI không thay đổi ngẫu nhiên.
 
 * **BƯỚC 3: SỬA (ADAPT)**
-    * NGAY SAU KHI DÁN, bạn phải đọc "Mô tả Kịch bản Chi tiết" của cảnh này (tức là nội dung của Chương đó).
+    * NGAY SAU KHI DÁN, bạn phải đọc "Mô tả Kịch bản Chi tiết" của cảnh này.
     * BẮT BUỘC **SỬA LẠI** bản dịch vừa dán để nó khớp với bối cảnh của cảnh.
     * Cụ thể: Sửa lại **Trang phục (Clothing)**, **Hành động (Action)**, và **Biểu cảm (Expression)**, nhưng phải giữ nguyên đặc điểm Cốt lõi (tóc, mắt, mặt, vóc dáng).
     * *VÍ DỤ QUY TRÌNH:*
@@ -163,15 +164,6 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
 * **Prompt Tạo Chuyển động (Veo 3.1):** Prompt riêng biệt bằng **TIẾNG ANH**, phải là một chuỗi JSON hợp lệ.
     * Nếu có nhân vật, BẮT BUỘC phải nhúng mô tả (đã dịch và sửa) vào key \`character_definitions\` trong JSON.
 `;
-
-// =========================================================================
-// === KẾT THÚC SỬA LỖI NHẤT QUÁN ===
-// =========================================================================
-
-
-// (Tất cả các hàm và hằng số khác như PHOTOREALISTIC_GUIDE, parseGeminiResponse, 
-//  analyzeCharacterImage, generateImagesFromPrompt, v.v... 
-//  đều giữ nguyên như phiên bản trước)
 
 // --- CÁC HƯỚNG DẪN PHONG CÁCH ---
 const PHOTOREALISTIC_GUIDE = `
@@ -214,7 +206,7 @@ Khi tạo "Prompt Tạo Ảnh" cho phong cách này, BẮT BUỘC tuân thủ:
 * **Cấu trúc:** \`[Chủ đề] in vintage [era/substyle] style, with [màu sắc], [kết cấu], [yếu tố thiết kế], high detail, nostalgic atmosphere.\`
 * **Ví dụ:** "A vintage poster of a city skyline in Art Deco style, geometric patterns, bold contrasting colors, aged paper texture, 1920s aesthetic, high resolution."`;
 
-// --- CÁC HÀM CÒN LẠI GIỮ NGUYÊN ---
+// --- CÁC HÀM HELPERS (GIỮ NGUYÊN) ---
 const parseGeminiResponse = (responseText: string): Script => {
   try {
     const tableMatch = responseText.match(/### Bảng Phân cảnh\s*([\s\S]*)/);
@@ -349,9 +341,6 @@ export const generateImagesFromPrompt = async (
 };
 
 
-// =========================================================================
-// === SỬA LỖI: CẬP NHẬT HÀM `generateScript` (LOGIC "MỘT TRONG HAI" v10.0) ===
-// =========================================================================
 export const generateScript = async (
     userInput: string, 
     mode: 'idea' | 'script', 
@@ -556,4 +545,54 @@ export const generateStorytellingPrompts = async (
         // Let's not include the raw response in the user-facing error to avoid clutter, it's already in the console.
         throw new Error(`AI không thể xử lý yêu cầu. Lỗi: ${errorMessage}`);
     }
+};
+
+// =========================================================================
+// === HÀM MỚI: REGENERATE SINGLE IMAGE PROMPT ===
+// =========================================================================
+export const regenerateSingleImagePrompt = async (
+  sceneDescription: string,
+  characterData: string, // Nguồn chân lý
+  stylePrompt: string,
+  aspectRatio: string,
+  apiKey: string
+): Promise<string> => {
+  try {
+    if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key.");
+    const ai = new GoogleGenAI({ apiKey });
+
+    const systemPrompt = `
+    Bạn là một chuyên gia sửa lỗi Prompt AI. Nhiệm vụ của bạn là VIẾT LẠI một "Prompt Tạo Ảnh" cho một cảnh quay cụ thể, đảm bảo tính nhất quán tuyệt đối của nhân vật.
+    
+    **NGUỒN DỮ LIỆU NHÂN VẬT (NGUỒN CHÂN LÝ):**
+    ${characterData}
+    
+    **QUY TẮC BẮT BUỘC (DỊCH, DÁN VÀ SỬA):**
+    Khi viết prompt (Tiếng Anh), bạn phải tuân thủ quy trình này cho MỌI nhân vật xuất hiện:
+    1.  **TÌM:** Tìm nhân vật trong Nguồn Chân Lý.
+    2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt.
+    3.  **SỬA:** Dựa vào "Mô tả Cảnh", sửa lại Trang phục, Hành động, Biểu cảm cho phù hợp.
+    
+    **Mô tả Cảnh:** ${sceneDescription}
+    **Phong cách:** ${stylePrompt}
+    **Tỉ lệ:** ${aspectRatio}
+    
+    **Yêu cầu đầu ra:** CHỈ trả về nội dung Prompt (Tiếng Anh), không thêm lời dẫn.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: [{ parts: [{ text: systemPrompt }] }],
+    });
+
+    const responseText = response.text;
+    if (!responseText) throw new Error("Phản hồi trống.");
+    
+    // Lọc bỏ các dấu markdown nếu có
+    return responseText.replace(/^```(json|text)?\s*|\s*```$/g, '').trim();
+
+  } catch (error) {
+    console.error("Lỗi khi tạo lại prompt:", error);
+    throw new Error("Không thể tạo lại prompt.");
+  }
 };
