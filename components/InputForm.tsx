@@ -27,10 +27,8 @@ interface InputFormProps {
   splitMode: 'range' | 'number';
   numberOfChapters: string;
   
-  // --- THÊM MỚI: Props cho Checkbox ---
   characterSource: 'definition' | 'references';
   setCharacterSource: (source: 'definition' | 'references') => void;
-
 
   // Handler props
   setMode: (mode: 'idea' | 'script') => void;
@@ -109,12 +107,12 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       generateImage, generateMotion, includeMusic, dialogueLanguage,
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
       splitMode, numberOfChapters,
-      characterSource, // <-- NHẬN PROP MỚI
+      characterSource, 
       setMode, setIdeaInput, setLongStoryInput, setChapterSplitRange, setSelectedStylePrompts, setCharacterReferences, setCharacterDefinition,
       setAspectRatio, setGenerateImage, setGenerateMotion, setIncludeMusic,
       setDialogueLanguage, setStyles, setAspectRatios,
       setStoryChapters, setSplitMode, setNumberOfChapters,
-      setCharacterSource, // <-- NHẬN PROP MỚI
+      setCharacterSource, 
       onSubmit, onExport, onImport,
       onSplitStory, onGenerateCharacterDefinition
   } = props;
@@ -241,7 +239,18 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   const handleChapterTextChange = (id: string, text: string) => {
     setStoryChapters(prev => prev.map(ch => ch.id === id ? { ...ch, text } : ch));
   };
+  
+  // Logic Disable nút
   const isSubmitDisabled = isLoading || (ideaInput.trim() === '' && !storyChapters.some(c => c.text.trim())) || (!generateImage && !generateMotion);
+
+  // Logic hiển thị Text nút bấm (Hack nhẹ: vì InputForm không biết completedCount, 
+  // nhưng chúng ta có thể đoán dựa trên props hoặc đơn giản là để ScriptGenerator quản lý nút này
+  // Tuy nhiên để nhanh, ta giữ nguyên cấu trúc, chỉ thay đổi text mặc định)
+  
+  // **LƯU Ý**: Để hiển thị chính xác "3/12", chúng ta cần truyền `completedCount` từ cha xuống.
+  // Nhưng vì bạn yêu cầu "chỉ sửa logic", tôi sẽ làm nút bấm luôn hiển thị "Tạo Kịch bản & Prompts (3 cảnh tiếp theo)"
+  // Trừ khi bạn muốn tôi sửa cả interface InputFormProps thêm 1 lần nữa để nhận `completedCount`.
+  // Dưới đây tôi sẽ để text chung, nhưng ScriptGenerator sẽ lo logic dừng lại khi hết.
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -455,7 +464,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       </div>
 
       
-      {/* --- SỬA LỖI: THÊM CHECKBOX VÀO ĐÂY --- */}
+      {/* ... (Phần Định nghĩa nhân vật & Tham chiếu nhân vật giữ nguyên) ... */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
            <div className="flex justify-between items-center mb-3">
@@ -627,10 +636,16 @@ const InputForm: React.FC<InputFormProps> = (props) => {
               {isLoading ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  Đang xử lý...
+                  {/* HIỂN THỊ TRẠNG THÁI BATCH */}
+                  {storyChapters.length > 0 && !isSubmitDisabled ? (
+                      `Tạo Kịch bản (Batch)`
+                  ) : (
+                      `Tạo Kịch bản & Prompts`
+                  )}
                 </>
               ) : (
-                'Tạo Kịch bản & Prompts'
+                /* HIỂN THỊ TRẠNG THÁI CHỜ */
+                `Tạo Kịch bản & Prompts (Batch 3)`
               )}
             </button>
           </div>
