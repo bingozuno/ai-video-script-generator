@@ -39,11 +39,11 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerate
             {/* STT: 3% */}
             <th scope="col" className="px-2 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[3%]">STT</th>
             
-            {/* Mô tả: Giảm xuống 15% */}
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[15%]">Mô tả Kịch bản</th>
+            {/* Mô tả: Giảm xuống 10% (Rất gọn) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[10%]">Mô tả Kịch bản</th>
             
-            {/* Prompt Ảnh: Tăng lên 45% */}
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[45%]">
+            {/* Prompt Ảnh: Tăng lên 50% (Rất rộng) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[50%]">
               Prompt Tạo Ảnh
               <div className="text-[10px] text-green-400 normal-case mt-0.5 font-bold">
                 (Đã tạo: {scenes.length}/{totalScenes})
@@ -67,9 +67,8 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerate
             <tr key={index} className="hover:bg-slate-800/50 transition-colors">
               <td className="px-2 py-4 whitespace-nowrap text-sm font-medium text-slate-200 align-top">{scene.sceneNumber}</td>
               
-              {/* SỬA LỖI: Xóa max-h và scrollbar, dùng whitespace-pre-wrap để hiện hết chữ */}
               <td className="px-4 py-4 text-sm text-slate-300 align-top leading-relaxed">
-                <p className="whitespace-pre-wrap">{scene.description}</p>
+                <p className="whitespace-pre-wrap break-words">{scene.description}</p>
               </td>
               
               <td className="px-4 py-4 text-sm text-slate-300 align-top">
