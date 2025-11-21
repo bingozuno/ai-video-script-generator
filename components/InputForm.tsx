@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { StyleInfo, CharacterReference, StoryChapter } from '../types';
 import { analyzeCharacterImage } from '../services/geminiService';
 
-
 interface InputFormProps {
   apiKey: string;
   mode: 'idea' | 'script';
@@ -25,6 +24,7 @@ interface InputFormProps {
   storyChapters: StoryChapter[];
   splitMode: 'range' | 'number';
   numberOfChapters: string;
+  
   characterSource: 'definition' | 'references';
   setCharacterSource: (source: 'definition' | 'references') => void;
 
@@ -124,12 +124,12 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   
   const [draggedCharId, setDraggedCharId] = useState<string | null>(null);
   
-  // --- THÊM MỚI: State để quản lý Tab đang mở của Chương ---
+  // State để quản lý Tab đang mở của Chương (bên phải)
   const [activeChapterTab, setActiveChapterTab] = useState(0);
   
   const importFileRef = useRef<HTMLInputElement>(null);
 
-  // (Giữ nguyên các hàm handleStyleClick, handleSaveStyle, handleSaveAspectRatio, handleAddCharacter, handleCharacterUpdate, handleImageUpload, handleAnalyze, handleSubmit)
+  // (Giữ nguyên các hàm handler)
   const handleStyleClick = (prompt: string) => {
     const newSelection = [...selectedStylePrompts];
     const isSelected = newSelection.includes(prompt);
@@ -185,23 +185,17 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     e.preventDefault();
     if ((ideaInput.trim() || storyChapters.some(c => c.text.trim())) && !isLoading) onSubmit();
   };
-
-  // --- CẬP NHẬT: Logic Thêm/Sửa/Xóa Chương ---
   const handleAddChapter = () => {
     setStoryChapters(prev => [...prev, { id: `chapter-${Date.now()}`, text: '' }]);
-    // Tự động chuyển sang tab mới tạo
     setActiveChapterTab(storyChapters.length);
   };
-  
   const handleChapterTextChange = (id: string, text: string) => {
     setStoryChapters(prev => prev.map(ch => ch.id === id ? { ...ch, text } : ch));
   };
-
   const handleDeleteActiveChapter = () => {
       if (storyChapters.length === 0) return;
       const newChapters = storyChapters.filter((_, index) => index !== activeChapterTab);
       setStoryChapters(newChapters);
-      // Điều chỉnh lại activeTab nếu cần (để không trỏ vào index không tồn tại)
       if (activeChapterTab >= newChapters.length) {
           setActiveChapterTab(Math.max(0, newChapters.length - 1));
       }
@@ -212,7 +206,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
        
-       {/* ... (Phần Phong cách & Tỉ lệ khung hình giữ nguyên) ... */}
+       {/* 1. PHONG CÁCH & TỈ LỆ (Giữ nguyên) */}
        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div>
           <label className="text-[20px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-3 block">Phong cách (Chọn tối đa 3)</label>
@@ -240,7 +234,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
               </div>
           )}
         </div>
-        
         <div>
           <label className="text-[20px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-3 block">Tỉ lệ khung hình</label>
            <div className="flex flex-wrap gap-3 items-center">
@@ -263,31 +256,17 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
        
-      {/* ... (Phần Quản lý Dự án giữ nguyên) ... */}
+      {/* 2. QUẢN LÝ DỰ ÁN (Giữ nguyên) */}
       <div className="mt-6">
             <h3 className="text-sm font-medium text-slate-300 mb-2">Quản lý Dự án & Tùy chọn Kịch bản</h3>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                    <button
-                        type="button"
-                        onClick={onExport}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 transition-colors"
-                    >
+                    <button type="button" onClick={onExport} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Xuất Dự án ra File (.json)
+                        Xuất Dự án (.json)
                     </button>
-                    <input
-                        type="file"
-                        ref={importFileRef}
-                        className="hidden"
-                        accept=".json"
-                        onChange={onImport}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => importFileRef.current?.click()}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors"
-                    >
+                    <input type="file" ref={importFileRef} className="hidden" accept=".json" onChange={onImport} />
+                    <button type="button" onClick={() => importFileRef.current?.click()} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                         Nạp Dự án từ File
                     </button>
@@ -295,92 +274,72 @@ const InputForm: React.FC<InputFormProps> = (props) => {
             </div>
         </div>
 
-      {/* ... (Phần Nhập/Chia kịch bản) ... */}
+      {/* 3. KHU VỰC NHẬP LIỆU CHÍNH - ĐÃ CẬP NHẬT UI CÂN XỨNG */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-6 pt-6 border-t border-slate-700">
-        {/* CỘT TRÁI: Nhập liệu */}
-        <div>
+        {/* CỘT TRÁI: Nhập truyện & Điều khiển chia */}
+        <div className="flex flex-col h-full">
           <label htmlFor="long-story-input" className="block text-[17px] font-bold text-yellow-400 mb-2">Nhập câu chuyện</label>
+          {/* Textarea kéo dài hết cỡ */}
           <textarea
               id="long-story-input"
-              rows={15}
               value={longStoryInput}
               onChange={(e) => setLongStoryInput(e.target.value)}
               placeholder="Dán toàn bộ câu chuyện của bạn vào đây..."
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 focus:ring-2 focus:ring-yellow-500"
+              className="w-full flex-grow bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 focus:ring-2 focus:ring-yellow-500 resize-none min-h-[300px]"
               disabled={isLoading}
           />
-          <div className="mt-4 p-4 border border-slate-700 rounded-lg bg-slate-800/50">
-            {/* ... (Giữ nguyên phần chọn cách chia chương) ... */}
-            <div className="space-y-3">
-                <div className="flex items-center">
-                    <input type="radio" id="split-by-range" name="split-mode" value="range" checked={splitMode === 'range'} onChange={() => setSplitMode('range')} className="h-4 w-4 text-yellow-500 bg-slate-700 border-slate-600 focus:ring-yellow-600" />
-                    <label htmlFor="split-by-range" className="ml-3 flex items-center text-sm font-medium text-slate-300 whitespace-nowrap">
-                        Chia mỗi chương khoảng: <input id="split-range-input" type="number" value={chapterSplitRange} onChange={(e) => setChapterSplitRange(e.target.value)} className="ml-2 w-28 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50" disabled={isLoading || splitMode !== 'range'} /> <span className="ml-2 text-slate-400">ký tự</span>
-                    </label>
+          
+          {/* KHU VỰC ĐIỀU KHIỂN CHIA: Gộp 1 hàng, nằm ngay dưới textarea */}
+          <div className="mt-3 flex flex-wrap items-center justify-between bg-slate-800/50 p-3 rounded-lg border border-slate-700 gap-3">
+                <div className="flex items-center space-x-4 flex-wrap">
+                    <div className="flex items-center">
+                        <input type="radio" id="split-by-range" name="split-mode" value="range" checked={splitMode === 'range'} onChange={() => setSplitMode('range')} className="h-4 w-4 text-yellow-500 bg-slate-700 border-slate-600 focus:ring-yellow-600" />
+                        <label htmlFor="split-by-range" className="ml-2 flex items-center text-sm font-medium text-slate-300">
+                            Mỗi chương: <input type="number" value={chapterSplitRange} onChange={(e) => setChapterSplitRange(e.target.value)} className="mx-1 w-16 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-center focus:ring-1 focus:ring-yellow-500 disabled:opacity-50" disabled={isLoading || splitMode !== 'range'} /> ký tự
+                        </label>
+                    </div>
+                    <div className="flex items-center">
+                        <input type="radio" id="split-by-number" name="split-mode" value="number" checked={splitMode === 'number'} onChange={() => setSplitMode('number')} className="h-4 w-4 text-yellow-500 bg-slate-700 border-slate-600 focus:ring-yellow-600" />
+                        <label htmlFor="split-by-number" className="ml-2 flex items-center text-sm font-medium text-slate-300">
+                            Chia thành: <input type="number" value={numberOfChapters} onChange={(e) => setNumberOfChapters(e.target.value)} className="mx-1 w-12 bg-slate-700 border border-slate-600 rounded px-1 py-0.5 text-center focus:ring-1 focus:ring-yellow-500 disabled:opacity-50" disabled={isLoading || splitMode !== 'number'} min="1" /> chương
+                        </label>
+                    </div>
                 </div>
-                <div className="flex items-center">
-                    <input type="radio" id="split-by-number" name="split-mode" value="number" checked={splitMode === 'number'} onChange={() => setSplitMode('number')} className="h-4 w-4 text-yellow-500 bg-slate-700 border-slate-600 focus:ring-yellow-600" />
-                    <label htmlFor="split-by-number" className="ml-3 flex items-center text-sm font-medium text-slate-300 whitespace-nowrap">
-                        Chia thành số chương: <input id="split-number-input" type="number" value={numberOfChapters} onChange={(e) => setNumberOfChapters(e.target.value)} className="ml-2 w-28 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50" disabled={isLoading || splitMode !== 'number'} min="1" />
-                    </label>
-                </div>
-            </div>
-            <div className="flex justify-end mt-4">
-                 <button type="button" onClick={onSplitStory} disabled={isLoading || !longStoryInput.trim()} className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-slate-900 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-yellow-500 disabled:bg-slate-500 disabled:cursor-not-allowed">
-                    Chia thành các chương
+                <button type="button" onClick={onSplitStory} disabled={isLoading || !longStoryInput.trim()} className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-slate-900 text-sm font-bold rounded-md transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed">
+                    Chia ngay
                 </button>
-            </div>
           </div>
         </div>
 
-        {/* CỘT PHẢI: ĐÃ CHIA CẢNH (DẠNG TAB) - ĐÃ SỬA ĐỔI */}
+        {/* CỘT PHẢI: Đã chia cảnh (Dạng Tab) */}
         <div className="space-y-4 flex flex-col h-full">
           <div className="flex justify-between items-start">
             <label className="block text-[17px] font-bold text-yellow-400">Đã chia cảnh</label>
             <div className="flex items-center space-x-2 flex-shrink-0">
-                <button 
-                    type="button" 
-                    onClick={handleDeleteActiveChapter} 
-                    disabled={isLoading || storyChapters.length === 0}
-                    className="p-1.5 text-red-400 hover:bg-red-900/30 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Xóa chương hiện tại"
-                >
+                <button type="button" onClick={handleDeleteActiveChapter} disabled={isLoading || storyChapters.length === 0} className="p-1.5 text-red-400 hover:bg-red-900/30 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Xóa chương hiện tại">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
-                <button 
-                    type="button" 
-                    onClick={handleAddChapter} 
-                    disabled={isLoading} 
-                    className="p-2 bg-yellow-500 text-slate-900 rounded-full hover:bg-yellow-600 disabled:bg-slate-500 disabled:cursor-not-allowed transition-colors"
-                    title="Thêm chương mới"
-                >
+                <button type="button" onClick={handleAddChapter} disabled={isLoading} className="p-2 bg-yellow-500 text-slate-900 rounded-full hover:bg-yellow-600 disabled:bg-slate-500 disabled:cursor-not-allowed transition-colors" title="Thêm chương mới">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                 </button>
             </div>
           </div>
           
-          {/* --- GIAO DIỆN TAB --- */}
           <div className="flex-grow flex flex-col border border-slate-700 rounded-lg overflow-hidden bg-slate-800/50 h-full min-h-[420px]">
              {storyChapters.length > 0 ? (
                 <>
-                    {/* Thanh Tab ngang */}
                     <div className="flex overflow-x-auto border-b border-slate-700 bg-slate-900/50 scrollbar-hide">
                         {storyChapters.map((chapter, index) => (
                             <button
                                 key={chapter.id}
                                 type="button"
                                 onClick={() => setActiveChapterTab(index)}
-                                className={`
-                                    flex-shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-700/50 transition-colors
-                                    ${activeChapterTab === index ? 'bg-slate-800 text-cyan-400 border-t-2 border-t-cyan-400' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'}
-                                `}
+                                className={`flex-shrink-0 px-4 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-700/50 transition-colors ${activeChapterTab === index ? 'bg-slate-800 text-cyan-400 border-t-2 border-t-cyan-400' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'}`}
                             >
                                 Chương {index + 1}
                             </button>
                         ))}
                     </div>
-
-                    {/* Nội dung Tab */}
                     <div className="p-4 flex-grow flex flex-col">
                         <textarea 
                             value={storyChapters[activeChapterTab]?.text || ''} 
@@ -398,219 +357,129 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                 <div className="flex items-center justify-center h-full text-slate-500 flex-col">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                     <p>Chưa có chương nào.</p>
-                    <p className="text-xs mt-1">Nhập truyện và nhấn "Chia thành các chương".</p>
+                    <p className="text-xs mt-1">Nhập truyện và nhấn "Chia ngay".</p>
                 </div>
              )}
           </div>
         </div>
       </div>
 
-      {/* ... (Phần Định nghĩa nhân vật & Tham chiếu nhân vật giữ nguyên) ... */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-           <div className="flex justify-between items-center mb-3">
-             
-             {/* Sửa Label thành Checkbox */}
-             <label htmlFor="char-source-definition" className="flex items-center cursor-pointer">
-                <input 
-                  type="radio" 
-                  id="char-source-definition" 
-                  name="characterSource"
-                  checked={characterSource === 'definition'}
-                  onChange={() => setCharacterSource('definition')}
-                  className="h-4 w-4 text-green-500 bg-slate-700 border-slate-600 focus:ring-green-600"
-                />
-                <h3 className="ml-2 text-lg font-semibold text-green-400">Định nghĩa nhân vật</h3>
-             </label>
-             {/* Kết thúc sửa Label */}
-
-             <button
+      
+      {/* --- 4. GIAO DIỆN TAB CHO NGUỒN NHÂN VẬT (ĐÃ CẬP NHẬT) --- */}
+      <div className="mt-8">
+        {/* Thanh Tab chuyển đổi nguồn */}
+        <div className="flex border-b border-slate-700 mb-4">
+            <button
                 type="button"
-                onClick={onGenerateCharacterDefinition}
-                disabled={isLoading || isGeneratingDef || !storyChapters.some(c => c.text.trim())}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-bold rounded-md text-slate-900 bg-yellow-500 hover:bg-yellow-600 disabled:bg-slate-500 disabled:cursor-not-allowed"
-              >
-                 {isGeneratingDef ? (
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                 )}
-                Tạo định nghĩa nhân vật
-              </button>
-           </div>
-          <textarea 
-            rows={15} 
-            value={characterDefinition} 
-            onChange={(e) => setCharacterDefinition(e.target.value)}
-            placeholder="Dùng nút 'Tạo định nghĩa' ở trên, hoặc tự viết định nghĩa nhân vật (bằng Tiếng Việt) vào đây..."
-            className={`w-full h-full bg-slate-800/50 border rounded-lg p-3 text-sm text-slate-200 placeholder-slate-400 focus:ring-2  focus:border-green-500 transition-colors ${characterSource === 'definition' ? 'border-green-500 ring-1 ring-green-500' : 'border-slate-700'}`}
-            disabled={isLoading || characterSource !== 'definition'}
-          />
+                onClick={() => setCharacterSource('definition')}
+                className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${characterSource === 'definition' ? 'border-green-500 text-green-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+            >
+                1. Định nghĩa nhân vật (Văn bản)
+            </button>
+            <button
+                type="button"
+                onClick={() => setCharacterSource('references')}
+                className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${characterSource === 'references' ? 'border-green-500 text-green-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+            >
+                2. Tham chiếu nhân vật (Hình ảnh)
+            </button>
         </div>
 
-        <div>
-            {/* Sửa Label thành Checkbox */}
-            <label htmlFor="char-source-references" className="flex items-center cursor-pointer mb-3">
-              <input 
-                type="radio" 
-                id="char-source-references" 
-                name="characterSource"
-                checked={characterSource === 'references'}
-                onChange={() => setCharacterSource('references')}
-                className="h-4 w-4 text-green-500 bg-slate-700 border-slate-600 focus:ring-green-600"
-              />
-              <h3 className="ml-2 text-lg font-semibold text-green-400">Tham Chiếu Nhân Vật (Tùy chọn)</h3>
-            </label>
-            {/* Kết thúc sửa Label */}
-
-            <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 rounded-lg border transition-colors ${characterSource === 'references' ? 'border-green-500 ring-1 ring-green-500' : 'border-slate-700 border-dashed'}`}>
-              {characterReferences.map((char) => (
-                <div key={char.id} className={`bg-slate-800/50 p-4 border border-slate-700 rounded-lg space-y-3 ${isLoading || characterSource !== 'references' ? 'opacity-50' : ''}`}>
-                  <input type="text" value={char.name} onChange={(e) => handleCharacterUpdate(char.id, 'name', e.target.value)}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500"
-                    disabled={isLoading || characterSource !== 'references'}
-                  />
-                  
-                  <div 
-                    className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'} ${characterSource !== 'references' ? 'cursor-not-allowed' : ''}`}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (characterSource === 'references') setDraggedCharId(char.id);
-                    }}
-                    onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDraggedCharId(null);
-                    }}
-                    onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDraggedCharId(null);
-                        if (characterSource === 'references') {
-                          const file = e.dataTransfer.files?.[0];
-                          if (file) {
-                              handleImageUpload(char.id, file);
-                          }
-                        }
-                    }}
-                  >
-                    {draggedCharId === char.id && (
-                        <div className="absolute inset-0 bg-cyan-500/30 flex items-center justify-center pointer-events-none z-10">
-                            <p className="text-cyan-200 font-semibold">Thả ảnh vào đây</p>
-                        </div>
-                    )}
-
-                    {char.imageBase64 ? (
-                      <>
-                        <img src={`data:${char.fileType};base64,${char.imageBase64}`} alt={`Preview ${char.name}`} className="object-contain h-full w-full rounded-md"/>
-                        <button type="button" onClick={() => handleCharacterUpdate(char.id, 'imageBase64', null)}
-                          className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 leading-none focus:outline-none z-20"
-                          disabled={isLoading || characterSource !== 'references'}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                      </>
-                    ) : (
-                      <label className={`${characterSource === 'references' ? 'cursor-pointer' : 'cursor-not-allowed'} text-center text-slate-400 p-4`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <span className="text-xs mt-1 block">Tải lên hoặc Kéo thả</span>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={(e) => handleImageUpload(char.id, e.target.files ? e.target.files[0] : null)}
-                          disabled={isLoading || characterSource !== 'references'}
-                        />
-                      </label>
-                    )}
-                  </div>
-                  
-                  <button type="button" onClick={() => handleAnalyze(char.id)} disabled={!char.imageBase64 || char.isAnalyzing || isLoading || characterSource !== 'references'}
-                    className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 disabled:bg-slate-500 disabled:cursor-not-allowed">
-                    {char.isAnalyzing ? <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : null}
-                    Phân tích bằng AI
-                  </button>
-
-                  <textarea rows={4} value={char.description} onChange={(e) => handleCharacterUpdate(char.id, 'description', e.target.value)}
-                    placeholder="AI sẽ điền mô tả Tiếng Việt vào đây..."
-                    className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md p-2 text-sm text-yellow-200 placeholder-yellow-400/50 focus:ring-1 focus:ring-yellow-400"
-                    disabled={isLoading || characterSource !== 'references'}
-                  />
+        {/* Nội dung Tab */}
+        <div className="min-h-[300px]">
+            {/* TAB 1: ĐỊNH NGHĨA VĂN BẢN */}
+            <div className={characterSource === 'definition' ? 'block' : 'hidden'}>
+                <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm text-slate-400">Mô tả chi tiết ngoại hình nhân vật (Tiếng Việt) để AI sử dụng.</span>
+                    <button
+                        type="button"
+                        onClick={onGenerateCharacterDefinition}
+                        disabled={isLoading || isGeneratingDef || !storyChapters.some(c => c.text.trim())}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-bold rounded-md text-slate-900 bg-yellow-500 hover:bg-yellow-600 disabled:bg-slate-500 disabled:cursor-not-allowed"
+                    >
+                        {isGeneratingDef ? 'Đang phân tích...' : 'Tự động tạo từ truyện'}
+                    </button>
                 </div>
-              ))}
-              {characterReferences.length < 5 && (
-                 <button 
-                    type="button" 
-                    onClick={handleAddCharacter} 
-                    className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 hover:border-slate-500 transition-colors min-h-[150px] disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading || characterSource !== 'references'}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                    <span className="mt-2 text-sm font-medium">Thêm nhân vật</span>
-                 </button>
-              )}
+                <textarea 
+                    rows={12} 
+                    value={characterDefinition} 
+                    onChange={(e) => setCharacterDefinition(e.target.value)}
+                    placeholder="Ví dụ: Haruka Sato: 70 tuổi, tóc bạc búi cao, mắt nâu hiền từ..."
+                    className="w-full bg-slate-800/50 border border-green-500/50 rounded-lg p-4 text-sm text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                    disabled={isLoading}
+                />
+            </div>
+
+            {/* TAB 2: THAM CHIẾU HÌNH ẢNH */}
+            <div className={characterSource === 'references' ? 'block' : 'hidden'}>
+                <div className="mb-3 text-sm text-slate-400">Tải ảnh nhân vật lên để AI phân tích và lấy mô tả.</div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 rounded-lg border border-green-500/50 bg-slate-800/20">
+                  {characterReferences.map((char) => (
+                    <div key={char.id} className="bg-slate-800 p-4 border border-slate-700 rounded-lg space-y-3">
+                      <input type="text" value={char.name} onChange={(e) => handleCharacterUpdate(char.id, 'name', e.target.value)}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-sm font-semibold text-slate-200 focus:ring-1 focus:ring-green-500" disabled={isLoading}/>
+                      
+                      <div 
+                        className={`relative w-full h-40 bg-slate-700 rounded-md flex items-center justify-center border-2 border-dashed transition-colors ${draggedCharId === char.id ? 'border-cyan-500 bg-slate-600' : 'border-slate-600'}`}
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDraggedCharId(char.id); }}
+                        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDraggedCharId(null); }}
+                        onDrop={(e) => {
+                            e.preventDefault(); e.stopPropagation(); setDraggedCharId(null);
+                            const file = e.dataTransfer.files?.[0]; if (file) handleImageUpload(char.id, file);
+                        }}
+                      >
+                        {draggedCharId === char.id && <div className="absolute inset-0 bg-cyan-500/30 flex items-center justify-center pointer-events-none z-10"><p className="text-cyan-200 font-semibold">Thả ảnh vào đây</p></div>}
+                        {char.imageBase64 ? (
+                          <>
+                            <img src={`data:${char.fileType};base64,${char.imageBase64}`} alt="Preview" className="object-contain h-full w-full rounded-md"/>
+                            <button type="button" onClick={() => handleCharacterUpdate(char.id, 'imageBase64', null)} className="absolute top-1 right-1 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1 z-20" disabled={isLoading}><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                          </>
+                        ) : (
+                          <label className="cursor-pointer text-center text-slate-400 p-4 w-full h-full flex flex-col items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span className="text-xs">Tải/Kéo ảnh</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(char.id, e.target.files?.[0] || null)} disabled={isLoading}/>
+                          </label>
+                        )}
+                      </div>
+                      
+                      <button type="button" onClick={() => handleAnalyze(char.id)} disabled={!char.imageBase64 || char.isAnalyzing || isLoading}
+                        className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 disabled:bg-slate-500">
+                        {char.isAnalyzing ? 'Đang phân tích...' : 'Phân tích bằng AI'}
+                      </button>
+                      <textarea rows={4} value={char.description} onChange={(e) => handleCharacterUpdate(char.id, 'description', e.target.value)} placeholder="AI sẽ điền mô tả..." className="w-full bg-yellow-500/10 border border-yellow-500/30 rounded-md p-2 text-sm text-yellow-200 focus:ring-1 focus:ring-yellow-400" disabled={isLoading}/>
+                    </div>
+                  ))}
+                  {characterReferences.length < 5 && (
+                     <button type="button" onClick={handleAddCharacter} className="w-full h-full bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-700/50 transition-colors min-h-[150px]" disabled={isLoading}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                        <span className="mt-2 text-sm font-medium">Thêm nhân vật</span>
+                     </button>
+                  )}
+                </div>
             </div>
         </div>
       </div>
        
-      {/* ... (Phần Tùy chỉnh chi tiết & Nút Submit giữ nguyên) ... */}
+      {/* 5. CÁC TÙY CHỌN CUỐI (Giữ nguyên) */}
       <div className="mt-6 pt-2 p-4 bg-slate-800/50 border border-slate-700 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-200">Tùy chỉnh chi tiết</h3>
-
             <div className="flex items-center space-x-6">
-              <div className="flex items-center">
-                  <input type="checkbox" id="image-prompt-toggle" checked={generateImage} onChange={(e) => setGenerateImage(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" />
-                  <label htmlFor="image-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Ảnh</label>
-              </div>
-              <div className="flex items-center">
-                  <input type="checkbox" id="motion-prompt-toggle" checked={generateMotion} onChange={(e) => setGenerateMotion(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" />
-                  <label htmlFor="motion-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Chuyển Động</label>
-              </div>
+              <div className="flex items-center"><input type="checkbox" id="image-prompt-toggle" checked={generateImage} onChange={(e) => setGenerateImage(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" /><label htmlFor="image-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Ảnh</label></div>
+              <div className="flex items-center"><input type="checkbox" id="motion-prompt-toggle" checked={generateMotion} onChange={(e) => setGenerateMotion(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" /><label htmlFor="motion-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Chuyển Động</label></div>
             </div>
-
-            <button type="submit" disabled={isSubmitDisabled}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 disabled:bg-slate-500 disabled:cursor-not-allowed transition-all">
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  {storyChapters.length > 0 && !isSubmitDisabled ? (
-                      `Tạo Kịch bản (Batch)`
-                  ) : (
-                      `Tạo Kịch bản & Prompts`
-                  )}
-                </>
-              ) : (
-                `Tạo Kịch bản & Prompts`
-              )}
+            <button type="submit" disabled={isSubmitDisabled} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 disabled:bg-slate-500 disabled:cursor-not-allowed transition-all">
+              {isLoading ? <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>{storyChapters.length > 0 && !isSubmitDisabled ? `Tạo Kịch bản (Batch)` : `Tạo Kịch bản & Prompts`}</> : `Tạo Kịch bản & Prompts`}
             </button>
           </div>
           <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-300">Bao gồm mô tả âm nhạc (Music) trong prompt.</span>
-              <label htmlFor="music-toggle" className="flex items-center cursor-pointer">
-                  <div className="relative">
-                      <input type="checkbox" id="music-toggle" className="sr-only" checked={includeMusic} onChange={e => setIncludeMusic(e.target.checked)}/>
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${includeMusic ? 'bg-green-500 ring-2 ring-green-400 ring-offset-2 ring-offset-slate-800' : 'bg-slate-600'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${includeMusic ? 'transform translate-x-6' : ''}`}></div>
-                  </div>
-              </label>
+              <label htmlFor="music-toggle" className="flex items-center cursor-pointer"><div className="relative"><input type="checkbox" id="music-toggle" className="sr-only" checked={includeMusic} onChange={e => setIncludeMusic(e.target.checked)}/><div className={`block w-14 h-8 rounded-full transition-colors ${includeMusic ? 'bg-green-500 ring-2 ring-green-400 ring-offset-2 ring-offset-slate-800' : 'bg-slate-600'}`}></div><div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${includeMusic ? 'transform translate-x-6' : ''}`}></div></div></label>
           </div>
           <div className="flex items-center justify-between">
-              <label htmlFor="dialogue-language" className="flex items-center text-sm font-medium text-slate-300">
-                Ngôn ngữ đối thoại
-                <InfoTooltip text="Nhập tên ngôn ngữ bất kỳ mà Gemini hỗ trợ (ví dụ: English, Spanish, Korean, Tiếng Pháp...)" />
-              </label>
-              <input 
-                type="text"
-                id="dialogue-language" 
-                value={dialogueLanguage} 
-                onChange={(e) => setDialogueLanguage(e.target.value)}
-                placeholder="Ví dụ: English, Spanish, Korean..."
-                className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500 placeholder-slate-400" 
-              />
+              <label htmlFor="dialogue-language" className="flex items-center text-sm font-medium text-slate-300">Ngôn ngữ đối thoại <InfoTooltip text="Nhập tên ngôn ngữ bất kỳ..." /></label>
+              <input type="text" id="dialogue-language" value={dialogueLanguage} onChange={(e) => setDialogueLanguage(e.target.value)} placeholder="Ví dụ: English, Spanish, Korean..." className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500 placeholder-slate-400" />
           </div>
       </div>
     </form>
