@@ -4,8 +4,9 @@ import CodeBlock from './CodeBlock';
 
 interface SceneTableProps {
   scenes: Scene[];
+  totalScenes: number; // <-- PROP MỚI: Tổng số cảnh
   onGenerateImage: (sceneIndex: number) => void;
-  onRegeneratePrompt: (sceneIndex: number) => void; // <-- THÊM PROP MỚI
+  onRegeneratePrompt: (sceneIndex: number) => void;
   onOpenImage: (src: string, name: string) => void;
 }
 
@@ -29,31 +30,50 @@ const ImageGenerationPlaceholder: React.FC<{ isGenerating: boolean }> = ({ isGen
 );
 
 
-const SceneTable: React.FC<SceneTableProps> = ({ scenes, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
+const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-700 border border-slate-700">
         <thead className="bg-slate-800">
           <tr>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[5%]">STT</th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[5%]">Thời gian</th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[20%]">Mô tả Kịch bản</th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[25%]">Prompt Tạo Ảnh</th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[20%]">Ảnh tạo ra</th>
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[25%]">Prompt Tạo Chuyển động</th>
+            {/* STT: Hẹp lại (3%) */}
+            <th scope="col" className="px-2 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[3%]">STT</th>
+            
+            {/* ĐÃ XÓA CỘT THỜI GIAN */}
+            
+            {/* Mô tả: Hẹp lại (15%) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[15%]">Mô tả Kịch bản</th>
+            
+            {/* Prompt Ảnh: Rộng nhất (45%) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[45%]">
+              Prompt Tạo Ảnh
+              <div className="text-[11px] text-green-400 normal-case mt-1 font-bold">
+                (Đã tạo: {scenes.length}/{totalScenes})
+              </div>
+            </th>
+            
+            {/* Ảnh tạo ra: (15%) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[15%]">Ảnh tạo ra</th>
+            
+            {/* Prompt Video: (22%) */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[22%]">
+              Prompt Tạo Chuyển động
+              <div className="text-[11px] text-green-400 normal-case mt-1 font-bold">
+                (Đã tạo: {scenes.length}/{totalScenes})
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody className="bg-slate-900 divide-y divide-slate-800">
           {scenes.map((scene, index) => (
             <tr key={index} className="hover:bg-slate-800/50 transition-colors">
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-200 align-top">{scene.sceneNumber}</td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-300 align-top">{scene.duration}</td>
+              <td className="px-2 py-4 whitespace-nowrap text-sm font-medium text-slate-200 align-top">{scene.sceneNumber}</td>
+              {/* ĐÃ XÓA CỘT THỜI GIAN */}
               <td className="px-4 py-4 text-sm text-slate-300 align-top"><p>{scene.description}</p></td>
               <td className="px-4 py-4 text-sm text-slate-300 align-top">
                 <div className="flex flex-col space-y-3">
                   <CodeBlock code={scene.imagePrompt} />
                   <div className="flex space-x-2">
-                      {/* NÚT TẠO ẢNH CŨ */}
                       <button 
                         onClick={() => onGenerateImage(index)}
                         disabled={scene.isGeneratingImages}
@@ -63,7 +83,6 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, onGenerateImage, onRege
                         {scene.isGeneratingImages ? 'Đang tạo...' : 'Tạo ảnh'}
                       </button>
 
-                      {/* NÚT TẠO LẠI MỚI (MÀU XANH LÁ) */}
                       <button 
                         onClick={() => onRegeneratePrompt(index)}
                         disabled={scene.isRegeneratingPrompt}

@@ -8,14 +8,12 @@ interface ScriptDisplayProps {
   isLoading: boolean;
   error: string | null;
   onGenerateImage: (sceneIndex: number) => void;
-  // --- THÊM PROP MỚI ---
   onRegeneratePrompt: (sceneIndex: number) => void;
   onOpenImage: (src: string, name: string) => void;
 }
 
 const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, isLoading, error, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
 
-  // (Các hàm downloadFile, handleDownloadChapters... giữ nguyên)
   const downloadFile = (filename: string, content: string, mimeType: string) => {
     const bom = mimeType.includes('csv') ? '\uFEFF' : '';
     const blob = new Blob([bom + content], { type: mimeType });
@@ -124,8 +122,14 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, is
             </button>
           </div>
         </div>
-        {/* TRUYỀN HÀM onRegeneratePrompt XUỐNG SCENE TABLE */}
-        <SceneTable scenes={scenes} onGenerateImage={onGenerateImage} onRegeneratePrompt={onRegeneratePrompt} onOpenImage={onOpenImage} />
+        {/* CẬP NHẬT: Truyền totalScenes */}
+        <SceneTable 
+          scenes={scenes} 
+          totalScenes={storyChapters.length} // <-- TRUYỀN TỔNG SỐ CẢNH XUỐNG
+          onGenerateImage={onGenerateImage} 
+          onRegeneratePrompt={onRegeneratePrompt} 
+          onOpenImage={onOpenImage} 
+        />
          {scenes.length === 0 && !isLoading && (
             <div className="text-center py-10 border-2 border-dashed border-slate-700 rounded-lg mt-4">
                 <p className="text-slate-500">Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.</p>
