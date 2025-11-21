@@ -36,26 +36,24 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerate
       <table className="min-w-full divide-y divide-slate-700">
         <thead className="bg-slate-800">
           <tr>
-            {/* STT: Cực hẹp (3%) */}
+            {/* STT: 3% */}
             <th scope="col" className="px-2 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[3%]">STT</th>
             
-            {/* ĐÃ BỎ CỘT THỜI GIAN */}
+            {/* Mô tả: Giảm xuống 15% */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[15%]">Mô tả Kịch bản</th>
             
-            {/* Mô tả: Hẹp vừa phải (20%) */}
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[20%]">Mô tả Kịch bản</th>
-            
-            {/* Prompt Ảnh: Rộng nhất (40%) */}
-            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[40%]">
+            {/* Prompt Ảnh: Tăng lên 45% */}
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[45%]">
               Prompt Tạo Ảnh
               <div className="text-[10px] text-green-400 normal-case mt-0.5 font-bold">
                 (Đã tạo: {scenes.length}/{totalScenes})
               </div>
             </th>
             
-            {/* Ảnh: (15%) */}
+            {/* Ảnh: 15% */}
             <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[15%]">Ảnh tạo ra</th>
             
-            {/* Prompt Video: (22%) */}
+            {/* Prompt Video: 22% */}
             <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-[22%]">
               Prompt Chuyển động
               <div className="text-[10px] text-purple-400 normal-case mt-0.5 font-bold">
@@ -69,15 +67,15 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerate
             <tr key={index} className="hover:bg-slate-800/50 transition-colors">
               <td className="px-2 py-4 whitespace-nowrap text-sm font-medium text-slate-200 align-top">{scene.sceneNumber}</td>
               
+              {/* SỬA LỖI: Xóa max-h và scrollbar, dùng whitespace-pre-wrap để hiện hết chữ */}
               <td className="px-4 py-4 text-sm text-slate-300 align-top leading-relaxed">
-                <p className="max-h-40 overflow-y-auto custom-scrollbar pr-1">{scene.description}</p>
+                <p className="whitespace-pre-wrap">{scene.description}</p>
               </td>
               
               <td className="px-4 py-4 text-sm text-slate-300 align-top">
                 <div className="flex flex-col space-y-2">
                   <CodeBlock code={scene.imagePrompt} />
                   <div className="flex space-x-2 mt-1">
-                      {/* Nút Tạo Ảnh */}
                       <button 
                         onClick={() => onGenerateImage(index)}
                         disabled={scene.isGeneratingImages}
@@ -86,7 +84,6 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, totalScenes, onGenerate
                         {scene.isGeneratingImages ? 'Đang vẽ...' : 'Tạo ảnh'}
                       </button>
 
-                      {/* Nút Tạo lại Prompt (Xanh lá) */}
                       <button 
                         onClick={() => onRegeneratePrompt(index)}
                         disabled={scene.isRegeneratingPrompt}
