@@ -2,30 +2,41 @@ import React, { useState, useEffect } from 'react';
 import ScriptGenerator from './ScriptGenerator';
 import WatermarkRemover from './WatermarkRemover';
 
-// --- CÁC ICON MẠNG XÃ HỘI ---
+// --- CÁC ICON MẠNG XÃ HỘI (Được thiết kế lại giống hình ảnh) ---
+
 const ZaloIcon: React.FC = () => (
-  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12c0 3.86 2.14 7.25 5.33 9.07V23l3.5-2.52C11.23 20.83 11.61 21 12 21c5.52 0 10-4.48 10-9S17.52 2 12 2z"/>
-    <text x="12" y="16" fontSize="8" textAnchor="middle" fill="white" fontWeight="bold" style={{pointerEvents: 'none'}}>Z</text>
+  // Icon Zalo: Hình vuông bo góc màu xanh dương, chữ Zalo trắng
+  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="48" rx="12" fill="#0068FF"/>
+    <path d="M13 24.5H19L13 32H21" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M35 28C35 30.2091 33.2091 32 31 32C28.7909 32 27 30.2091 27 28C27 25.7909 28.7909 24 31 24C33.2091 24 35 25.7909 35 28Z" stroke="white" strokeWidth="3"/>
+    <path d="M24 22V32" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+    <circle cx="24" cy="20" r="2" fill="white"/>
   </svg>
 );
 
 const YoutubeIcon: React.FC = () => (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-    </svg>
+  // Icon YouTube: Hình tròn đỏ, nút play trắng
+  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="24" fill="#FF0000"/>
+    <path d="M32 24L18 32V16L32 24Z" fill="white"/>
+  </svg>
 );
 
 const TiktokIcon: React.FC = () => (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-2.1.03-4.15-.48-5.66-1.61-1.66-1.24-2.6-3.08-2.63-5.06-.02-1.3.31-2.58 1.02-3.66.83-1.27 2.11-2.1 3.54-2.28.62-.08 1.25-.09 1.87-.08v3.98c-.44.01-.88.07-1.32.19-1.05.28-1.92 1-2.35 1.99-.21.51-.33 1.05-.34 1.59-.01.62.11 1.23.36 1.81.38.88 1.12 1.47 1.99 1.61.97.16 1.97-.02 2.82-.44.86-.43 1.52-1.11 1.86-1.99.16-.43.25-.88.26-1.34.02-4.12.01-8.24.01-12.36Z"/>
-    </svg>
+  // Icon TikTok: Hình tròn đen, nốt nhạc trắng (cách điệu)
+  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="24" fill="#000000"/>
+    <path d="M33 15C33 15 30.5 15.5 29 14V27.5C29 32 25.5 33 23.5 32C21.5 31 20 29 21 26.5C22 24 25 24.5 25 24.5V20C25 20 19.5 19 16.5 23.5C13.5 28 16 34 21.5 35.5C27 37 31.5 34 33 29.5V22C33 22 35.5 23 37 23.5V18C37 18 35 17.5 33 15Z" fill="white"/>
+  </svg>
 );
 
 const FacebookIcon: React.FC = () => (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01Z" />
-    </svg>
+  // Icon Facebook: Hình tròn xanh dương, chữ f trắng
+  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="24" fill="#1877F2"/>
+    <path d="M26.5 36V24H30L31 19H26.5V17C26.5 16 27 15 28.5 15H30V11H27C23.5 11 21.5 12.5 21.5 16.5V19H18V24H21.5V36H26.5Z" fill="white"/>
+  </svg>
 );
 // --- KẾT THÚC ICON ---
 
@@ -73,27 +84,25 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-900 font-sans text-slate-200">
       <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
           <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center border-b border-slate-700 h-20">
+              <div className="flex flex-col md:flex-row justify-between items-center border-b border-slate-700 py-2">
                   {/* Khu vực Tab bên trái */}
-                  <div className="flex">
+                  <div className="flex mb-4 md:mb-0">
                     <TabButton tabId="scriptGenerator" label="Tạo Kịch Bản Video" />
                     <TabButton tabId="watermarkRemover" label="AI Xóa Watermark" />
                   </div>
 
-                  {/* Khu vực Mạng xã hội bên phải */}
+                  {/* Khu vực Mạng xã hội bên phải (Căn chỉnh thẳng hàng) */}
                   <div className="flex items-center space-x-6">
                       {/* Nút Zalo */}
                       <a 
                         href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="flex flex-col items-center text-slate-400 hover:text-blue-400 transition-colors group" 
+                        className="flex flex-col items-center group" 
                         title="Tham gia nhóm Zalo"
                       >
-                          <div className="group-hover:scale-110 transition-transform">
-                            <ZaloIcon />
-                          </div>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium">Zalo</span>
+                          <ZaloIcon />
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Zalo</span>
                       </a>
 
                       {/* Nút YouTube */}
@@ -101,13 +110,11 @@ const App: React.FC = () => {
                         href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="flex flex-col items-center text-slate-400 hover:text-red-500 transition-colors group" 
+                        className="flex flex-col items-center group" 
                         title="Kênh YouTube"
                       >
-                          <div className="group-hover:scale-110 transition-transform">
-                            <YoutubeIcon />
-                          </div>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium">YouTube</span>
+                          <YoutubeIcon />
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">YouTube</span>
                       </a>
 
                       {/* Nút TikTok */}
@@ -115,13 +122,11 @@ const App: React.FC = () => {
                         href="https://www.tiktok.com/@chuyendramagiadinh" 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="flex flex-col items-center text-slate-400 hover:text-pink-400 transition-colors group" 
+                        className="flex flex-col items-center group" 
                         title="Kênh TikTok"
                       >
-                           <div className="group-hover:scale-110 transition-transform">
-                             <TiktokIcon />
-                           </div>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium">TikTok</span>
+                           <TiktokIcon />
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">TikTok</span>
                       </a>
 
                       {/* Nút Facebook */}
@@ -129,20 +134,18 @@ const App: React.FC = () => {
                         href="https://www.facebook.com/ToolsElevenlabsPro" 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="flex flex-col items-center text-slate-400 hover:text-blue-600 transition-colors group" 
+                        className="flex flex-col items-center group" 
                         title="Trang Facebook"
                       >
-                           <div className="group-hover:scale-110 transition-transform">
-                             <FacebookIcon />
-                           </div>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium">Facebook</span>
+                           <FacebookIcon />
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Facebook</span>
                       </a>
                   </div>
               </div>
           </div>
       </nav>
       
-      {/* Khu vực nhập API Key (Giữ nguyên để chạy trên Vercel) */}
+      {/* Khu vực nhập API Key */}
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-slate-700 bg-slate-800/50">
         <label htmlFor="api-key-input" className="block text-sm font-medium text-yellow-400 mb-2">
           Gemini API Key (Đã lưu vào trình duyệt của bạn)
@@ -186,10 +189,10 @@ const App: React.FC = () => {
 
       {/* Nội dung chính */}
       <div style={{ display: activeTab === 'scriptGenerator' ? 'block' : 'none' }}>
-        <ScriptGenerator apiKey={apiKey} />
+        <ScriptGenerator />
       </div>
       <div style={{ display: activeTab === 'watermarkRemover' ? 'block' : 'none' }}>
-        <WatermarkRemover apiKey={apiKey} />
+        <WatermarkRemover />
       </div>
     </div>
   );
