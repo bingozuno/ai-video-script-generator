@@ -2,21 +2,19 @@ import React, { useState, useEffect } from 'react';
 import ScriptGenerator from './ScriptGenerator';
 import WatermarkRemover from './WatermarkRemover';
 
-// --- CÁC ICON MẠNG XÃ HỘI (Thiết kế theo phong cách Logo gốc) ---
+// --- CÁC ICON MẠNG XÃ HỘI ---
 
 const ZaloIcon: React.FC = () => (
-  // Icon Zalo: Hình vuông bo góc màu xanh dương đặc trưng, chữ Zalo trắng
+  // Icon Zalo: Hình vuông bo góc xanh dương, CHỮ 'Zalo' chuẩn text
   <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="48" height="48" rx="10" fill="#0068FF"/>
-    <path d="M14 25H22L14 33H24" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M34 29C34 31.2091 32.2091 33 30 33C27.7909 33 26 31.2091 26 29C26 26.7909 27.7909 25 30 25C32.2091 25 34 26.7909 34 29Z" stroke="white" strokeWidth="3.5"/>
-    <path d="M24 21V33" stroke="white" strokeWidth="3.5" strokeLinecap="round"/>
-    <circle cx="24" cy="17" r="2.5" fill="white"/>
+    {/* Sử dụng text SVG để đảm bảo chữ Zalo hiển thị đúng chính tả và rõ ràng */}
+    <text x="50%" y="65%" textAnchor="middle" fill="white" fontSize="18" fontFamily="Verdana, sans-serif" fontWeight="900">Zalo</text>
   </svg>
 );
 
 const YoutubeIcon: React.FC = () => (
-  // Icon YouTube: Hình tròn đỏ, nút play tam giác trắng
+  // Icon YouTube: Hình tròn đỏ
   <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="24" fill="#FF0000"/>
     <path d="M32 24L18 32V16L32 24Z" fill="white"/>
@@ -24,7 +22,7 @@ const YoutubeIcon: React.FC = () => (
 );
 
 const TiktokIcon: React.FC = () => (
-  // Icon TikTok: Hình tròn đen, nốt nhạc cách điệu trắng
+  // Icon TikTok: Hình tròn đen
   <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="24" fill="#000000"/>
     <path d="M33 15C33 15 30.5 15.5 29 14V27.5C29 32 25.5 33 23.5 32C21.5 31 20 29 21 26.5C22 24 25 24.5 25 24.5V20C25 20 19.5 19 16.5 23.5C13.5 28 16 34 21.5 35.5C27 37 31.5 34 33 29.5V22C33 22 35.5 23 37 23.5V18C37 18 35 17.5 33 15Z" fill="white"/>
@@ -32,7 +30,7 @@ const TiktokIcon: React.FC = () => (
 );
 
 const FacebookIcon: React.FC = () => (
-  // Icon Facebook: Hình tròn xanh dương, chữ 'f' trắng lệch phải
+  // Icon Facebook: Hình tròn xanh dương
   <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="24" cy="24" r="24" fill="#1877F2"/>
     <path d="M26.5 36V24H30L31 19H26.5V17C26.5 16 27 15 28.5 15H30V11H27C23.5 11 21.5 12.5 21.5 16.5V19H18V24H21.5V36H26.5Z" fill="white"/>
