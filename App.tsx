@@ -4,8 +4,9 @@ import WatermarkRemover from './WatermarkRemover';
 
 // --- CẤU HÌNH MẬT KHẨU ---
 // Bạn hãy đổi '123456' thành mật khẩu bạn muốn
-const APP_PASSWORD = 'tiendung_jxd123456'; 
-const AUTH_STORAGE_KEY = 'app-is-authenticated';
+// Khi bạn thay đổi chuỗi này, tất cả người dùng cũ sẽ bị đăng xuất tự động
+const APP_PASSWORD = '111111111'; 
+const AUTH_STORAGE_KEY = 'app-auth-token'; // Key để lưu xác thực
 
 // --- CÁC ICON MẠNG XÃ HỘI ---
 
@@ -45,7 +46,7 @@ const FacebookIcon: React.FC = () => (
 
 
 const App: React.FC = () => {
-  // --- TRẠNG THÁI XÁC THỰC (MỚI THÊM) ---
+  // --- TRẠNG THÁI XÁC THỰC ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState('');
@@ -59,26 +60,35 @@ const App: React.FC = () => {
 
   // Tự động tải key và kiểm tra đăng nhập khi mở App
   useEffect(() => {
-    // Kiểm tra API Key
+    // 1. Kiểm tra API Key
     const savedKey = localStorage.getItem(API_STORAGE_KEY);
     if (savedKey) {
       setApiKey(savedKey);
     }
 
-    // Kiểm tra trạng thái đăng nhập
-    const savedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (savedAuth === 'true') {
+    // 2. Kiểm tra trạng thái đăng nhập (LOGIC ĐÃ SỬA)
+    const savedAuthToken = localStorage.getItem(AUTH_STORAGE_KEY);
+    
+    // So sánh token đã lưu với mật khẩu hiện tại trong code
+    if (savedAuthToken === APP_PASSWORD) {
       setIsAuthenticated(true);
+    } else {
+      // Nếu không khớp (do đổi pass hoặc chưa đăng nhập), xóa token cũ đi cho sạch
+      if (savedAuthToken) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
+      setIsAuthenticated(false);
     }
   }, []);
 
-  // --- HÀM XỬ LÝ ĐĂNG NHẬP (MỚI THÊM) ---
+  // --- HÀM XỬ LÝ ĐĂNG NHẬP ---
   const handleLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
     if (passwordInput === APP_PASSWORD) {
       setIsAuthenticated(true);
-      localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+      // Lưu chính mật khẩu hiện tại làm token xác thực
+      localStorage.setItem(AUTH_STORAGE_KEY, APP_PASSWORD);
       setAuthError('');
     } else {
       setAuthError('Mật khẩu không đúng, vui lòng thử lại!');
@@ -119,7 +129,8 @@ const App: React.FC = () => {
             Xác thực người dùng
           </h2>
           <p className="text-slate-400 text-center mb-6 text-sm">
-            Vui lòng nhập mật khẩu để truy cập ứng dụng.
+            Hệ thống đã được cập nhật bảo mật.<br/>
+            Vui lòng nhập mật khẩu mới để truy cập.
           </p>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
