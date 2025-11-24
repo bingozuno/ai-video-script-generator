@@ -269,7 +269,8 @@ const App: React.FC = () => {
 
       {/* Nội dung chính */}
       <div style={{ display: activeTab === 'scriptGenerator' ? 'block' : 'none' }}>
-        <ScriptGenerator />
+        {/* QUAN TRỌNG: Đã thêm prop apiKey vào đây để sửa lỗi */}
+        <ScriptGenerator apiKey={apiKey} />
       </div>
       <div style={{ display: activeTab === 'watermarkRemover' ? 'block' : 'none' }}>
         <WatermarkRemover />
