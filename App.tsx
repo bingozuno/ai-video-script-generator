@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import ScriptGenerator from './ScriptGenerator';
 import WatermarkRemover from './WatermarkRemover';
 
+// --- CẤU HÌNH MẬT KHẨU ---
+// Bạn hãy đổi '123456' thành mật khẩu bạn muốn
+const APP_PASSWORD = '123456'; 
+const AUTH_STORAGE_KEY = 'app-is-authenticated';
+
 // --- CÁC ICON MẠNG XÃ HỘI ---
 
 const ZaloIcon: React.FC = () => (
@@ -40,27 +45,54 @@ const FacebookIcon: React.FC = () => (
 
 
 const App: React.FC = () => {
+  // --- TRẠNG THÁI XÁC THỰC (MỚI THÊM) ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  // --- TRẠNG THÁI CŨ ---
   const [activeTab, setActiveTab] = useState('scriptGenerator');
   const [apiKey, setApiKey] = useState<string>('');
 
-  // TÊN KEY ĐỂ LƯU TRỮ
-  const STORAGE_KEY = 'gemini-api-key';
+  // TÊN KEY ĐỂ LƯU TRỮ API GEMINI
+  const API_STORAGE_KEY = 'gemini-api-key';
 
-  // Tự động tải key khi mở App
+  // Tự động tải key và kiểm tra đăng nhập khi mở App
   useEffect(() => {
-    const savedKey = localStorage.getItem(STORAGE_KEY);
+    // Kiểm tra API Key
+    const savedKey = localStorage.getItem(API_STORAGE_KEY);
     if (savedKey) {
       setApiKey(savedKey);
     }
+
+    // Kiểm tra trạng thái đăng nhập
+    const savedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+    }
   }, []);
 
+  // --- HÀM XỬ LÝ ĐĂNG NHẬP (MỚI THÊM) ---
+  const handleLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (passwordInput === APP_PASSWORD) {
+      setIsAuthenticated(true);
+      localStorage.setItem(AUTH_STORAGE_KEY, 'true');
+      setAuthError('');
+    } else {
+      setAuthError('Mật khẩu không đúng, vui lòng thử lại!');
+    }
+  };
+
+  // --- HÀM XỬ LÝ API KEY ---
   const handleSaveKey = () => {
-    localStorage.setItem(STORAGE_KEY, apiKey);
+    localStorage.setItem(API_STORAGE_KEY, apiKey);
     alert('Đã lưu API Key vào trình duyệt!');
   };
 
   const handleClearKey = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(API_STORAGE_KEY);
     setApiKey('');
     alert('Đã xóa API Key khỏi trình duyệt!');
   };
@@ -78,6 +110,45 @@ const App: React.FC = () => {
     </button>
   );
 
+  // --- GIAO DIỆN ĐĂNG NHẬP (HIỂN THỊ KHI CHƯA NHẬP ĐÚNG PASS) ---
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-900 font-sans text-slate-200 flex items-center justify-center p-4">
+        <div className="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-700">
+          <h2 className="text-2xl font-bold text-center mb-6 text-cyan-400">
+            Xác thực người dùng
+          </h2>
+          <p className="text-slate-400 text-center mb-6 text-sm">
+            Vui lòng nhập mật khẩu để truy cập ứng dụng.
+          </p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                placeholder="Nhập mật khẩu..."
+                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white transition-all"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+              />
+            </div>
+            {authError && (
+              <p className="text-red-500 text-sm text-center font-medium animate-pulse">
+                {authError}
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-[1.02] active:scale-95"
+            >
+              Truy cập ngay
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // --- GIAO DIỆN CHÍNH (KHI ĐÃ ĐĂNG NHẬP) ---
   return (
     <div className="min-h-screen bg-slate-900 font-sans text-slate-200">
       <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
