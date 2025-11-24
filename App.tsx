@@ -4,7 +4,7 @@ import WatermarkRemover from './WatermarkRemover';
 
 // --- CẤU HÌNH MẬT KHẨU ---
 // Bạn hãy đổi '123456' thành mật khẩu bạn muốn
-const APP_PASSWORD = '123456'; 
+const APP_PASSWORD = 'tiendung_jxd123456'; 
 const AUTH_STORAGE_KEY = 'app-is-authenticated';
 
 // --- CÁC ICON MẠNG XÃ HỘI ---
