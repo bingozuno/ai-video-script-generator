@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Script, CharacterReference, StyleInfo, ProjectState, StorytellingScene, StoryChapter } from './types';
+import type { Script, CharacterReference, StyleInfo, ProjectState, StoryChapter } from './types';
 import { generateScript, generateImagesFromPrompt, generateCharacterDefinition, regenerateSingleImagePrompt } from './services/geminiService';
 import Header from './components/Header';
 import InputForm, { defaultStyles, defaultAspectRatios } from './components/InputForm';
@@ -150,6 +150,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   const [storyChapters, setStoryChapters] = useState<StoryChapter[]>([]);
   const [characterSource, setCharacterSource] = useState<'definition' | 'references'>('definition');
   
+  // --- MỚI: STATE CHO GIỚI HẠN 3 NHÂN VẬT ---
+  const [limitCharacterCount, setLimitCharacterCount] = useState<boolean>(false);
+
   // --- THÊM MỚI: QUẢN LÝ TIẾN ĐỘ ---
   const [completedCount, setCompletedCount] = useState<number>(0);
   const BATCH_SIZE = 3; // Số lượng prompt tạo mỗi lần nhấn
@@ -261,7 +264,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
           includeMusic, 
           dialogueLanguage,
           apiKey,
-          characterSource
+          characterSource,
+          limitCharacterCount // <--- MỚI: TRUYỀN BIẾN GIỚI HẠN NHÂN VẬT VÀO ĐÂY
       );
 
       // 3. Gộp kết quả mới vào danh sách cũ
@@ -376,10 +380,11 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleExportProject = () => {
-    // (Giữ nguyên)
+    // (Đã cập nhật thêm limitCharacterCount)
     const projectState: ProjectState = {
       mode, ideaInput, longStoryInput, storyChapters, selectedStylePrompts, characterReferences, 
       characterDefinition, aspectRatio, generateImage, generateMotion, includeMusic, dialogueLanguage, script,
+      limitCharacterCount // <--- Lưu trạng thái này
     };
     const dataStr = JSON.stringify(projectState, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -390,7 +395,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleImportProject = (event: React.ChangeEvent<HTMLInputElement>) => {
-     // (Giữ nguyên)
+     // (Đã cập nhật thêm limitCharacterCount)
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -413,6 +418,10 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
         setGenerateMotion(projectState.generateMotion !== false);
         setIncludeMusic(projectState.includeMusic || false);
         setDialogueLanguage(projectState.dialogueLanguage || 'Vietnamese');
+        
+        // Load biến mới, mặc định false nếu file cũ chưa có
+        setLimitCharacterCount(projectState.limitCharacterCount || false);
+
         setScript(projectState.script || null);
         // Reset tiến độ khi import
         setCompletedCount(projectState.script?.scenes.length || 0); 
@@ -428,7 +437,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
       <Header />
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-slate-800/50 p-6 rounded-lg shadow-lg border border-slate-700">
-          {/* Thay đổi: Truyền hàm wrapper onSubmit tùy chỉnh */}
+          {/* Thay đổi: Truyền limitCharacterCount và setter */}
           <InputForm
             apiKey={apiKey} 
             characterSource={characterSource}
@@ -438,6 +447,12 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
             aspectRatio={aspectRatio} generateImage={generateImage} generateMotion={generateMotion} includeMusic={includeMusic}
             dialogueLanguage={dialogueLanguage} isLoading={isLoading} isSplitting={false} isGeneratingDef={isGeneratingDef}
             styles={styles} aspectRatios={aspectRatios} storyChapters={storyChapters} splitMode={splitMode} numberOfChapters={numberOfChapters}
+            
+            // --- TRUYỀN STATE MỚI ---
+            limitCharacterCount={limitCharacterCount}
+            setLimitCharacterCount={setLimitCharacterCount}
+            // ------------------------
+
             setMode={setMode} setIdeaInput={setIdeaInput} setLongStoryInput={setLongStoryInput} setChapterSplitRange={setChapterSplitRange}
             setSelectedStylePrompts={setSelectedStylePrompts} setCharacterReferences={setCharacterReferences} setCharacterDefinition={setCharacterDefinition}
             setAspectRatio={setAspectRatio} setGenerateImage={setGenerateImage} setGenerateMotion={setGenerateMotion} setIncludeMusic={setIncludeMusic}
@@ -449,18 +464,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
             onExport={handleExportProject} onImport={handleImportProject} onSplitStory={handleSplitStory}
             onGenerateCharacterDefinition={handleGenerateCharacterDefinition}
           />
-          
-          {/* --- THÊM GIAO DIỆN ĐIỀU KHIỂN BATCH Ở ĐÂY HOẶC BÊN TRONG INPUTFORM --- */}
-          {/* Để đơn giản, tôi sẽ cập nhật nút Submit trong InputForm để hiển thị trạng thái này. 
-              Nhưng vì InputForm chỉ nhận onSubmit, nên logic hiển thị text nút bấm sẽ nằm trong InputForm.tsx.
-              Tuy nhiên, InputForm không biết về completedCount.
-              
-              GIẢI PHÁP TỐT NHẤT: 
-              Tôi sẽ sửa tệp InputForm.tsx một chút để nó nhận thêm props:
-              - completedCount
-              - totalChapters
-              Để nó có thể hiển thị text nút bấm đúng như bạn yêu cầu.
-          */}
         </div>
         <ScriptDisplay 
           script={script} 
