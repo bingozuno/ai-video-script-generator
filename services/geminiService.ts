@@ -353,7 +353,8 @@ export const generateScript = async (
     includeMusic: boolean,
     dialogueLanguage: string,
     apiKey: string,
-    characterSource: 'definition' | 'references' // <-- THAM SỐ MỚI TỪ CHECKBOX
+    characterSource: 'definition' | 'references', // <-- THAM SỐ MỚI TỪ CHECKBOX
+    limitCharacterCount: boolean = false // <--- THAM SỐ MỚI CẬP NHẬT: GIỚI HẠN NHÂN VẬT
 ): Promise<Script> => {
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -367,6 +368,12 @@ export const generateScript = async (
     } else if (generateMotion) {
         instructions = "**Yêu cầu Tạo Prompt:** CHỈ TẬP TRUNG vào việc tạo 'Prompt Tạo Chuyển động' ở **chế độ điện ảnh** như đã mô tả trong tiêu chuẩn. Điền 'Không yêu cầu' vào cột 'Prompt Tạo Ảnh'.";
     }
+
+    // --- LOGIC XỬ LÝ GIỚI HẠN 3 NHÂN VẬT ---
+    if (limitCharacterCount) {
+        instructions += "\n\n**YÊU CẦU ĐẶC BIỆT:** Trong trường 'imagePrompt', bạn CHỈ ĐƯỢC PHÉP mô tả TỐI ĐA 3 NHÂN VẬT CHÍNH quan trọng nhất xuất hiện trong cảnh đó. Ngay cả khi cốt truyện gốc có nhiều nhân vật hơn, hãy lọc và chỉ giữ lại mô tả của 3 người quan trọng nhất để tránh làm rối AI tạo ảnh. Bỏ qua mô tả ngoại hình của các nhân vật quần chúng hoặc phụ.";
+    }
+    // ----------------------------------------
 
     const baseSystemPrompt = mode === 'idea' ? SYSTEM_PROMPT_FROM_IDEA : SYSTEM_PROMPT_FROM_SCRIPT;
     

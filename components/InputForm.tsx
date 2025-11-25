@@ -16,6 +16,7 @@ interface InputFormProps {
   generateMotion: boolean;
   includeMusic: boolean;
   dialogueLanguage: string;
+  limitCharacterCount: boolean; // <--- THÊM MỚI
   isLoading: boolean;
   isSplitting: boolean;
   isGeneratingDef: boolean;
@@ -40,6 +41,7 @@ interface InputFormProps {
   setGenerateMotion: (value: boolean) => void;
   setIncludeMusic: (value: boolean) => void;
   setDialogueLanguage: (lang: string) => void;
+  setLimitCharacterCount: (value: boolean) => void; // <--- THÊM MỚI
   setStyles: (styles: StyleInfo[]) => void;
   setAspectRatios: (ratios: {name: string, value: string}[]) => void;
   setStoryChapters: (chapters: StoryChapter[] | ((prev: StoryChapter[]) => StoryChapter[])) => void;
@@ -99,13 +101,13 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   const {
       apiKey,
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
-      generateImage, generateMotion, includeMusic, dialogueLanguage,
+      generateImage, generateMotion, includeMusic, dialogueLanguage, limitCharacterCount,
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
       splitMode, numberOfChapters,
       characterSource, 
       setMode, setIdeaInput, setLongStoryInput, setChapterSplitRange, setSelectedStylePrompts, setCharacterReferences, setCharacterDefinition,
       setAspectRatio, setGenerateImage, setGenerateMotion, setIncludeMusic,
-      setDialogueLanguage, setStyles, setAspectRatios,
+      setDialogueLanguage, setLimitCharacterCount, setStyles, setAspectRatios,
       setStoryChapters, setSplitMode, setNumberOfChapters,
       setCharacterSource, 
       onSubmit, onExport, onImport,
@@ -467,6 +469,23 @@ const InputForm: React.FC<InputFormProps> = (props) => {
             <h3 className="text-lg font-semibold text-slate-200">Tùy chỉnh chi tiết</h3>
             <div className="flex items-center space-x-6">
               <div className="flex items-center"><input type="checkbox" id="image-prompt-toggle" checked={generateImage} onChange={(e) => setGenerateImage(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" /><label htmlFor="image-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Ảnh</label></div>
+              
+              {/* --- CHECKBOX MỚI: GIỚI HẠN 3 NHÂN VẬT --- */}
+              <div className="flex items-center">
+                <input 
+                    type="checkbox" 
+                    id="limit-char-toggle" 
+                    checked={limitCharacterCount} 
+                    onChange={(e) => setLimitCharacterCount(e.target.checked)} 
+                    className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={generateMotion} // Nếu Motion đang bật thì disable cái này
+                />
+                <label htmlFor="limit-char-toggle" className={`ml-3 block text-sm font-medium transition-colors ${generateMotion ? 'text-slate-500' : 'text-slate-200'}`}>
+                    Chỉ tạo tối đa 3 nhân vật trong prompt tạo ảnh
+                </label>
+              </div>
+              {/* ------------------------------------------ */}
+
               <div className="flex items-center"><input type="checkbox" id="motion-prompt-toggle" checked={generateMotion} onChange={(e) => setGenerateMotion(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" /><label htmlFor="motion-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">Prompt Tạo Chuyển Động</label></div>
             </div>
             <button type="submit" disabled={isSubmitDisabled} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 disabled:bg-slate-500 disabled:cursor-not-allowed transition-all">

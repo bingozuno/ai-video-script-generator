@@ -41,6 +41,7 @@ export interface ProjectState {
   generateMotion: boolean;
   includeMusic: boolean;
   dialogueLanguage: string;
+  limitCharacterCount: boolean; // <--- THÊM MỚI: Giới hạn 3 nhân vật
   script: Script | null;
 }
 
