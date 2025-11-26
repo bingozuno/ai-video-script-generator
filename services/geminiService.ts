@@ -579,15 +579,17 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt ảnh.
     3.  **SỬA:** Dựa vào "Mô tả Cảnh", sửa lại Trang phục, Hành động, Biểu cảm cho phù hợp.
 
-    **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG (QUAN TRỌNG):**
-    - Nội dung của 'motionPrompt' BẮT BUỘC phải là một chuỗi JSON hợp lệ (JSON String).
-    - Cấu trúc mẫu bắt buộc:
+    **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG (VEO 3.1 FORMAT - QUAN TRỌNG):**
+    - Nội dung của 'motionPrompt' BẮT BUỘC phải là một chuỗi JSON hợp lệ.
+    - Cấu trúc JSON phải chi tiết, bao gồm mô tả nhân vật để đảm bảo nhất quán.
+    - Mẫu JSON bắt buộc:
       {
+        "character_definitions": "Mô tả ngoại hình nhân vật (copy từ phần dịch ở trên)...",
+        "action_description": "Mô tả hành động chi tiết...",
         "camera_movement": "Pan Left / Zoom In...",
-        "strength": "High",
-        "speed": "Normal"
+        "atmosphere": "Cinematic lighting...",
+        "strength": "High"
       }
-    - TUYỆT ĐỐI KHÔNG viết văn bản mô tả thường (như 'Camera moves left...').
 
     **INPUT:**
     - Mô tả Cảnh: ${sceneDescription}
@@ -598,7 +600,7 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     Chỉ trả về đúng định dạng JSON này, không thêm văn bản khác:
     {
       "imagePrompt": "Nội dung prompt ảnh tiếng Anh...",
-      "motionPrompt": "{\"camera_movement\": \"...\"}"  // TRẢ VỀ DẠNG CHUỖI JSON
+      "motionPrompt": "{\"character_definitions\": \"...\", \"action_description\": \"...\"}"
     }
     `;
 
