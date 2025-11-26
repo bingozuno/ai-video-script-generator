@@ -555,48 +555,62 @@ export const generateStorytellingPrompts = async (
 };
 
 // =========================================================================
-// === HÀM MỚI: REGENERATE SINGLE IMAGE PROMPT ===
+// === HÀM MỚI: REGENERATE CẢ ẢNH VÀ CHUYỂN ĐỘNG ===
 // =========================================================================
-export const regenerateSingleImagePrompt = async (
+export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý nghĩa
   sceneDescription: string,
   characterData: string, // Nguồn chân lý
   stylePrompt: string,
   aspectRatio: string,
   apiKey: string
-): Promise<string> => {
+): Promise<{ imagePrompt: string; motionPrompt: string }> => { // Trả về Object
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key.");
     const ai = new GoogleGenAI({ apiKey });
 
     const systemPrompt = `
-    Bạn là một chuyên gia sửa lỗi Prompt AI. Nhiệm vụ của bạn là VIẾT LẠI một "Prompt Tạo Ảnh" cho một cảnh quay cụ thể, đảm bảo tính nhất quán tuyệt đối của nhân vật.
+    Bạn là một chuyên gia sửa lỗi Prompt AI. Nhiệm vụ của bạn là VIẾT LẠI cả "Prompt Tạo Ảnh" và "Prompt Tạo Chuyển động" cho một cảnh quay cụ thể, đảm bảo chúng khớp nhau hoàn hảo và nhân vật nhất quán.
     
     **NGUỒN DỮ LIỆU NHÂN VẬT (NGUỒN CHÂN LÝ):**
     ${characterData}
     
-    **QUY TẮC BẮT BUỘC (DỊCH, DÁN VÀ SỬA):**
-    Khi viết prompt (Tiếng Anh), bạn phải tuân thủ quy trình này cho MỌI nhân vật xuất hiện:
+    **QUY TẮC BẮT BUỘC CHO PROMPT ẢNH (DỊCH, DÁN VÀ SỬA):**
     1.  **TÌM:** Tìm nhân vật trong Nguồn Chân Lý.
-    2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt.
+    2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt ảnh.
     3.  **SỬA:** Dựa vào "Mô tả Cảnh", sửa lại Trang phục, Hành động, Biểu cảm cho phù hợp.
+
+    **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG:**
+    - Phải logic với Prompt Ảnh vừa tạo.
+    - Phải là một chuỗi JSON hợp lệ mô tả camera và hành động (Veo 3.1 format).
+
+    **INPUT:**
+    - Mô tả Cảnh: ${sceneDescription}
+    - Phong cách: ${stylePrompt}
+    - Tỉ lệ: ${aspectRatio}
     
-    **Mô tả Cảnh:** ${sceneDescription}
-    **Phong cách:** ${stylePrompt}
-    **Tỉ lệ:** ${aspectRatio}
-    
-    **Yêu cầu đầu ra:** CHỈ trả về nội dung Prompt (Tiếng Anh), không thêm lời dẫn.
+    **OUTPUT JSON FORMAT (BẮT BUỘC):**
+    Chỉ trả về đúng định dạng JSON này, không thêm văn bản khác:
+    {
+      "imagePrompt": "Nội dung prompt ảnh tiếng Anh...",
+      "motionPrompt": "Nội dung prompt chuyển động (dạng JSON string hoặc text mô tả)..."
+    }
     `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-pro",
       contents: [{ parts: [{ text: systemPrompt }] }],
+      config: { responseMimeType: "application/json" } // Ép kiểu JSON để AI trả về đúng
     });
 
     const responseText = response.text;
     if (!responseText) throw new Error("Phản hồi trống.");
     
-    // Lọc bỏ các dấu markdown nếu có
-    return responseText.replace(/^```(json|text)?\s*|\s*```$/g, '').trim();
+    // Parse JSON
+    const result = JSON.parse(responseText);
+    return {
+        imagePrompt: result.imagePrompt || "",
+        motionPrompt: result.motionPrompt || ""
+    };
 
   } catch (error) {
     console.error("Lỗi khi tạo lại prompt:", error);

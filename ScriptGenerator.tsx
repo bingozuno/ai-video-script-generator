@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Script, CharacterReference, StyleInfo, ProjectState, StoryChapter } from './types';
-import { generateScript, generateImagesFromPrompt, generateCharacterDefinition, regenerateSingleImagePrompt } from './services/geminiService';
+import { generateScript, generateImagesFromPrompt, generateCharacterDefinition, regenerateScenePrompts } from './services/geminiService';
 import Header from './components/Header';
 import InputForm, { defaultStyles, defaultAspectRatios } from './components/InputForm';
 import ScriptDisplay from './components/ScriptDisplay';
@@ -154,7 +154,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   // --- QUẢN LÝ TIẾN ĐỘ & TỰ ĐỘNG CHẠY ---
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [isAutoRunning, setIsAutoRunning] = useState<boolean>(false); // State cho chế độ auto
-  const BATCH_SIZE = 5; // Số lượng prompt tạo mỗi lần nhấn (ĐÃ SỬA TỪ 3 LÊN 5)
+  const BATCH_SIZE = 5; // CHÍNH XÁC: 5 CHƯƠNG/LẦN
   
    useEffect(() => {
     // Load styles
@@ -305,7 +305,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
         console.log(`Đợi 3 giây trước khi tạo batch tiếp theo...`);
         timeout = setTimeout(() => {
             handleGenerateScript();
-        }, 3000); // 3000ms = 3 giây
+        }, 3000); // CHÍNH XÁC: 3 GIÂY
     } 
     // Điều kiện dừng: Khi đã làm xong hết các chương
     else if (completedCount >= storyChapters.length && isAutoRunning) {
@@ -357,8 +357,11 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
     }
   };
 
+  // --- HÀM TẠO LẠI PROMPT ĐÃ ĐƯỢC SỬA LOGIC (CẬP NHẬT CẢ 2 CỘT) ---
   const handleRegeneratePrompt = async (sceneIndex: number) => {
     if (!script || !script.scenes[sceneIndex]) return;
+    
+    // Bật trạng thái loading
     setScript(prev => {
         if (!prev) return null;
         const newScenes = [...prev.scenes];
@@ -366,29 +369,43 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
         return { ...prev, scenes: newScenes };
     });
     setError(null);
+
     try {
         const scene = script.scenes[sceneIndex];
         let finalCharacterDefinition = "";
+        
+        // Lấy định nghĩa nhân vật (giữ nguyên logic cũ)
         if (characterSource === 'references') {
             const refs = characterReferences.filter(r => r.description.trim()).map(r => `- ${r.name}: ${r.description.trim()}`);
             finalCharacterDefinition = refs.length > 0 ? refs.join('\n') : "Trống";
         } else {
             finalCharacterDefinition = characterDefinition.trim() || "Trống";
         }
+        
         const combinedStyle = selectedStylePrompts.join(', ');
-        const newPrompt = await regenerateSingleImagePrompt(
+        
+        // GỌI HÀM MỚI TỪ geminiService ĐỂ LẤY CẢ 2 PROMPT
+        const newPrompts = await regenerateScenePrompts(
             scene.description,
             finalCharacterDefinition,
             combinedStyle,
             aspectRatio,
             apiKey
         );
+
+        // CẬP NHẬT CẢ 2 PROMPT VÀO BẢNG
         setScript(prev => {
             if (!prev) return null;
             const newScenes = [...prev.scenes];
-            newScenes[sceneIndex] = { ...newScenes[sceneIndex], imagePrompt: newPrompt, isRegeneratingPrompt: false };
+            newScenes[sceneIndex] = { 
+                ...newScenes[sceneIndex], 
+                imagePrompt: newPrompts.imagePrompt,   // Cập nhật Ảnh
+                motionPrompt: newPrompts.motionPrompt, // Cập nhật Chuyển động
+                isRegeneratingPrompt: false 
+            };
             return { ...prev, scenes: newScenes };
         });
+
     } catch (err) {
         const msg = err instanceof Error ? err.message : "Lỗi";
         setError(`Lỗi tạo lại prompt cảnh ${sceneIndex + 1}: ${msg}`);
