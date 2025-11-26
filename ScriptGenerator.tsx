@@ -149,16 +149,15 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   const [numberOfChapters, setNumberOfChapters] = useState<string>('5');
   const [storyChapters, setStoryChapters] = useState<StoryChapter[]>([]);
   const [characterSource, setCharacterSource] = useState<'definition' | 'references'>('definition');
-  
-  // --- MỚI: STATE CHO GIỚI HẠN 3 NHÂN VẬT ---
   const [limitCharacterCount, setLimitCharacterCount] = useState<boolean>(false);
 
-  // --- THÊM MỚI: QUẢN LÝ TIẾN ĐỘ ---
+  // --- QUẢN LÝ TIẾN ĐỘ & TỰ ĐỘNG CHẠY ---
   const [completedCount, setCompletedCount] = useState<number>(0);
-  const BATCH_SIZE = 3; // Số lượng prompt tạo mỗi lần nhấn
+  const [isAutoRunning, setIsAutoRunning] = useState<boolean>(false); // State cho chế độ auto
+  const BATCH_SIZE = 5; // Số lượng prompt tạo mỗi lần nhấn (ĐÃ SỬA TỪ 3 LÊN 5)
   
    useEffect(() => {
-    // (Phần load localStorage giữ nguyên)
+    // Load styles
     try {
         const savedStyles = localStorage.getItem('customVideoStyles');
         const customStyles = savedStyles ? JSON.parse(savedStyles) : [];
@@ -170,6 +169,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
         setStyles([...defaultStyles]);
         if (defaultStyles.length > 0) setSelectedStylePrompts([defaultStyles[0].prompt]);
     }
+    // Load aspect ratios
     try {
         const savedRatios = localStorage.getItem('customVideoRatios');
         const customRatios = savedRatios ? JSON.parse(savedRatios) : [];
@@ -179,12 +179,10 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
     } catch (error) { console.error("Failed to load aspect ratios", error); }
   }, []);
 
-
   const handleOpenImageModal = (src: string, name: string) => setModalImage({ src, name });
   const handleCloseImageModal = () => setModalImage(null);
 
   const handleSplitStory = () => {
-    // (Giữ nguyên, nhưng reset tiến độ khi chia lại)
     if (!longStoryInput.trim()) { setError("Vui lòng nhập câu chuyện để chia."); return; }
     setError(null);
     try {
@@ -200,6 +198,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
       
       // Reset tiến độ
       setCompletedCount(0);
+      setIsAutoRunning(false);
       setScript(null);
 
       if (chapters.length === 0 && longStoryInput.trim().length > 0) {
@@ -211,7 +210,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleGenerateCharacterDefinition = async () => {
-    // (Giữ nguyên)
     const scriptText = storyChapters.map(c => c.text).join('\n\n').trim();
     if (!scriptText) { alert("Vui lòng nhập kịch bản."); return; }
     setIsGeneratingDef(true); setError(null);
@@ -222,38 +220,41 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
     finally { setIsGeneratingDef(false); }
   };
 
-  // --- SỬA LỖI: HÀM TẠO KỊCH BẢN THEO ĐỢT (BATCH) ---
+  // --- HÀM TẠO KỊCH BẢN THEO ĐỢT (BATCH) & LOGIC AUTO ---
   const handleGenerateScript = async () => {
     // 1. Xác định phạm vi (batch) cần tạo
     const totalChapters = storyChapters.length;
+    
+    // Nếu đã hoàn thành hết
     if (completedCount >= totalChapters) {
-        alert("Đã hoàn thành tạo prompt cho tất cả các chương!");
+        if (!isAutoRunning) alert("Đã hoàn thành tạo prompt cho tất cả các chương!");
         return;
     }
+
+    // Kích hoạt chế độ Auto Running
+    setIsAutoRunning(true);
 
     const startIndex = completedCount;
     const endIndex = Math.min(startIndex + BATCH_SIZE, totalChapters);
     const batchChapters = storyChapters.slice(startIndex, endIndex);
 
-    // 2. Chuẩn bị nội dung chỉ cho batch này (đánh số thứ tự tiếp theo)
+    // 2. Chuẩn bị nội dung chỉ cho batch này
     const scriptText = batchChapters
         .map((c, i) => `--- BẮT ĐẦU CHƯƠNG ${startIndex + i + 1} ---\n${c.text}\n--- KẾT THÚC CHƯƠNG ${startIndex + i + 1} ---`)
         .join('\n\n').trim();
 
-    const currentMode = 'script'; // Luôn là script mode khi dùng chapters
+    const currentMode = 'script'; 
     
     if (!scriptText.trim()) { setError("Không có nội dung để xử lý."); return; }
     if (selectedStylePrompts.length === 0) { setError("Vui lòng chọn phong cách."); return; }
 
     setMode(currentMode); setIsLoading(true); setError(null);
     
-    // Lưu ý: Không reset setScript(null) ở đây để giữ lại các cảnh cũ
-
     try {
       const combinedStylePrompt = selectedStylePrompts.join(', ');
       
       const result = await generateScript(
-          scriptText, // Chỉ gửi nội dung của 3 chương hiện tại
+          scriptText, 
           currentMode, 
           combinedStylePrompt, 
           characterReferences, 
@@ -265,17 +266,17 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
           dialogueLanguage,
           apiKey,
           characterSource,
-          limitCharacterCount // <--- MỚI: TRUYỀN BIẾN GIỚI HẠN NHÂN VẬT VÀO ĐÂY
+          limitCharacterCount 
       );
 
       // 3. Gộp kết quả mới vào danh sách cũ
       setScript(prevScript => {
           if (!prevScript) {
-              return result; // Nếu chưa có gì, đây là batch đầu tiên
+              return result; 
           }
           return {
               ...prevScript,
-              scenes: [...prevScript.scenes, ...result.scenes] // Gộp thêm cảnh mới vào sau
+              scenes: [...prevScript.scenes, ...result.scenes] 
           };
       });
 
@@ -288,22 +289,44 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
       } else {
         setError('Đã xảy ra một lỗi không xác định.');
       }
+      // Nếu lỗi thì dừng auto
+      setIsAutoRunning(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Hàm để reset toàn bộ tiến độ (Nút "Làm mới")
+  // --- EFFECT XỬ LÝ TỰ ĐỘNG CHẠY TIẾP ---
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    
+    // Điều kiện: Đang bật Auto, Không đang load, Chưa làm xong hết, và Đã làm được ít nhất 1 đợt
+    if (isAutoRunning && !isLoading && completedCount < storyChapters.length && completedCount > 0) {
+        console.log(`Đợi 3 giây trước khi tạo batch tiếp theo...`);
+        timeout = setTimeout(() => {
+            handleGenerateScript();
+        }, 3000); // 3000ms = 3 giây
+    } 
+    // Điều kiện dừng: Khi đã làm xong hết các chương
+    else if (completedCount >= storyChapters.length && isAutoRunning) {
+        setIsAutoRunning(false);
+        alert("Đã hoàn thành tạo prompt cho TẤT CẢ các chương!");
+    }
+
+    return () => clearTimeout(timeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedCount, isAutoRunning, isLoading, storyChapters.length]);
+
   const handleResetProgress = () => {
       if (confirm("Bạn có chắc muốn xóa toàn bộ prompts đã tạo và làm lại từ đầu không?")) {
           setCompletedCount(0);
+          setIsAutoRunning(false);
           setScript(null);
           setError(null);
       }
   };
 
   const handleGenerateImage = async (sceneIndex: number) => {
-    // (Giữ nguyên)
     if (!script || !script.scenes[sceneIndex]) return;
     setScript(prev => {
         if (!prev) return null;
@@ -335,7 +358,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleRegeneratePrompt = async (sceneIndex: number) => {
-    // (Giữ nguyên)
     if (!script || !script.scenes[sceneIndex]) return;
     setScript(prev => {
         if (!prev) return null;
@@ -380,11 +402,10 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleExportProject = () => {
-    // (Đã cập nhật thêm limitCharacterCount)
     const projectState: ProjectState = {
       mode, ideaInput, longStoryInput, storyChapters, selectedStylePrompts, characterReferences, 
       characterDefinition, aspectRatio, generateImage, generateMotion, includeMusic, dialogueLanguage, script,
-      limitCharacterCount // <--- Lưu trạng thái này
+      limitCharacterCount 
     };
     const dataStr = JSON.stringify(projectState, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -395,7 +416,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   };
 
   const handleImportProject = (event: React.ChangeEvent<HTMLInputElement>) => {
-     // (Đã cập nhật thêm limitCharacterCount)
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -419,12 +439,14 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
         setIncludeMusic(projectState.includeMusic || false);
         setDialogueLanguage(projectState.dialogueLanguage || 'Vietnamese');
         
-        // Load biến mới, mặc định false nếu file cũ chưa có
         setLimitCharacterCount(projectState.limitCharacterCount || false);
 
         setScript(projectState.script || null);
+        
         // Reset tiến độ khi import
         setCompletedCount(projectState.script?.scenes.length || 0); 
+        setIsAutoRunning(false);
+        
         alert('Dự án đã nạp thành công!');
       } catch (err) { console.error(err); alert('File lỗi.'); }
     };
@@ -437,7 +459,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
       <Header />
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-slate-800/50 p-6 rounded-lg shadow-lg border border-slate-700">
-          {/* Thay đổi: Truyền limitCharacterCount và setter */}
           <InputForm
             apiKey={apiKey} 
             characterSource={characterSource}
@@ -448,10 +469,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
             dialogueLanguage={dialogueLanguage} isLoading={isLoading} isSplitting={false} isGeneratingDef={isGeneratingDef}
             styles={styles} aspectRatios={aspectRatios} storyChapters={storyChapters} splitMode={splitMode} numberOfChapters={numberOfChapters}
             
-            // --- TRUYỀN STATE MỚI ---
             limitCharacterCount={limitCharacterCount}
             setLimitCharacterCount={setLimitCharacterCount}
-            // ------------------------
 
             setMode={setMode} setIdeaInput={setIdeaInput} setLongStoryInput={setLongStoryInput} setChapterSplitRange={setChapterSplitRange}
             setSelectedStylePrompts={setSelectedStylePrompts} setCharacterReferences={setCharacterReferences} setCharacterDefinition={setCharacterDefinition}
@@ -459,8 +478,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
             setDialogueLanguage={setDialogueLanguage} setStyles={setStyles} setAspectRatios={setAspectRatios} setStoryChapters={setStoryChapters}
             setSplitMode={setSplitMode} setNumberOfChapters={setNumberOfChapters}
             
-            // --- TRUYỀN HÀM XỬ LÝ ---
-            onSubmit={handleGenerateScript} // Hàm này giờ đã có logic batch
+            onSubmit={handleGenerateScript} 
             onExport={handleExportProject} onImport={handleImportProject} onSplitStory={handleSplitStory}
             onGenerateCharacterDefinition={handleGenerateCharacterDefinition}
           />
@@ -474,6 +492,18 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
           onRegeneratePrompt={handleRegeneratePrompt}
           onOpenImage={handleOpenImageModal}
         />
+        {/* Nút reset tiện ích (nếu cần hiển thị ở UI) */}
+        {completedCount > 0 && completedCount < storyChapters.length && !isLoading && !isAutoRunning && (
+            <div className="text-center mt-4">
+                <p className="text-slate-400 mb-2">Đã tạo {completedCount}/{storyChapters.length} chương.</p>
+                <button 
+                  onClick={handleGenerateScript}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  Tiếp tục tạo chương tiếp theo
+                </button>
+            </div>
+        )}
       </main>
       <footer className="text-center py-4 text-slate-500 text-sm">
         <p>
