@@ -206,7 +206,9 @@ Khi tạo "Prompt Tạo Ảnh" cho phong cách này, BẮT BUỘC tuân thủ:
 * **Cấu trúc:** \`[Chủ đề] in vintage [era/substyle] style, with [màu sắc], [kết cấu], [yếu tố thiết kế], high detail, nostalgic atmosphere.\`
 * **Ví dụ:** "A vintage poster of a city skyline in Art Deco style, geometric patterns, bold contrasting colors, aged paper texture, 1920s aesthetic, high resolution."`;
 
-// --- CÁC HÀM HELPERS (GIỮ NGUYÊN) ---
+// --- CÁC HÀM HELPERS ---
+
+// --- HÀM PHÂN TÍCH (PARSER) ĐÃ ĐƯỢC NÂNG CẤP ĐỂ XỬ LÝ DÒNG MỚI (NEWLINES) TRONG JSON ---
 const parseGeminiResponse = (responseText: string): Script => {
   try {
     const tableMatch = responseText.match(/### Bảng Phân cảnh\s*([\s\S]*)/);
@@ -214,13 +216,55 @@ const parseGeminiResponse = (responseText: string): Script => {
       throw new Error("Không tìm thấy '### Bảng Phân cảnh' trong phản hồi. Định dạng không hợp lệ.");
     }
     
-    const tableString = tableMatch[1];
-    const rows = tableString.trim().split('\n').slice(2); 
+    const tableContent = tableMatch[1].trim();
+    // 1. Tách dòng
+    const rawLines = tableContent.split('\n');
+    
+    // 2. Logic gộp dòng thông minh (Smart Merge)
+    const mergedRows: string[] = [];
+    let currentBuffer = "";
 
-    const scenes: Scene[] = rows.map((row, index) => {
+    // Regex nhận diện dòng mới: Bắt đầu bằng dấu | (có thể có khoảng trắng) và số thứ tự
+    // Ví dụ: | 1 | hoặc | Cảnh 1 | hoặc | 01 |
+    const rowStartRegex = /^\|\s*(?:Cảnh\s*)?\d+\s*\|/;
+
+    for (const line of rawLines) {
+        const trimmed = line.trim();
+        // Bỏ qua dòng trống, dòng tiêu đề, dòng gạch ngang phân cách
+        if (!trimmed || trimmed.includes('| STT/Phân cảnh |') || /^[|:\s-]+$/.test(trimmed)) {
+            continue;
+        }
+
+        // Nếu dòng bắt đầu bằng | số |, thì đây là một hàng mới
+        if (rowStartRegex.test(trimmed)) {
+            // Đẩy hàng cũ vào mảng (nếu có)
+            if (currentBuffer) {
+                mergedRows.push(currentBuffer);
+            }
+            // Bắt đầu hàng mới
+            currentBuffer = trimmed;
+        } else {
+            // Nếu không, đây là phần tiếp theo của hàng trước (ví dụ: dòng mới trong JSON)
+            // Gộp vào hàng trước bằng dấu cách
+            if (currentBuffer) {
+                currentBuffer += " " + trimmed;
+            }
+        }
+    }
+    // Đừng quên đẩy hàng cuối cùng vào
+    if (currentBuffer) {
+        mergedRows.push(currentBuffer);
+    }
+
+    // 3. Xử lý các hàng đã gộp
+    const scenes: Scene[] = mergedRows.map((row, index) => {
+      // Tách cột bằng dấu |
       const columns = row.split('|').map(cell => cell.trim()).slice(1, -1); 
-      if (columns.length !== 5) {
-        console.warn(`Hàng ${index + 1} có số cột không hợp lệ: ${columns.length}`, row);
+      
+      // Nếu thiếu cột, thử cảnh báo (nhưng code gộp dòng đã giảm thiểu lỗi này)
+      if (columns.length < 5) {
+        console.warn(`Hàng ${index + 1} có vẻ thiếu cột. Số cột: ${columns.length}`, row);
+        // Có thể trả về null hoặc cố gắng cứu dữ liệu, ở đây ta trả về null để filter
         return null;
       }
 
