@@ -579,9 +579,15 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt ảnh.
     3.  **SỬA:** Dựa vào "Mô tả Cảnh", sửa lại Trang phục, Hành động, Biểu cảm cho phù hợp.
 
-    **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG:**
-    - Phải logic với Prompt Ảnh vừa tạo.
-    - Phải là một chuỗi JSON hợp lệ mô tả camera và hành động (Veo 3.1 format).
+    **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG (QUAN TRỌNG):**
+    - Nội dung của 'motionPrompt' BẮT BUỘC phải là một chuỗi JSON hợp lệ (JSON String).
+    - Cấu trúc mẫu bắt buộc:
+      {
+        "camera_movement": "Pan Left / Zoom In...",
+        "strength": "High",
+        "speed": "Normal"
+      }
+    - TUYỆT ĐỐI KHÔNG viết văn bản mô tả thường (như 'Camera moves left...').
 
     **INPUT:**
     - Mô tả Cảnh: ${sceneDescription}
@@ -592,7 +598,7 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     Chỉ trả về đúng định dạng JSON này, không thêm văn bản khác:
     {
       "imagePrompt": "Nội dung prompt ảnh tiếng Anh...",
-      "motionPrompt": "Nội dung prompt chuyển động (dạng JSON string hoặc text mô tả)..."
+      "motionPrompt": "{\"camera_movement\": \"...\"}"  // TRẢ VỀ DẠNG CHUỖI JSON
     }
     `;
 
@@ -607,9 +613,18 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     
     // Parse JSON
     const result = JSON.parse(responseText);
+    
+    // Đảm bảo motionPrompt luôn là string, nếu AI trả về object thì stringify lại
+    let finalMotionPrompt = "";
+    if (typeof result.motionPrompt === 'object') {
+        finalMotionPrompt = JSON.stringify(result.motionPrompt);
+    } else {
+        finalMotionPrompt = String(result.motionPrompt || "");
+    }
+
     return {
         imagePrompt: result.imagePrompt || "",
-        motionPrompt: result.motionPrompt || ""
+        motionPrompt: finalMotionPrompt
     };
 
   } catch (error) {
