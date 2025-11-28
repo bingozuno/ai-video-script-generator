@@ -8,43 +8,6 @@ import WatermarkRemover from './WatermarkRemover';
 const APP_PASSWORD = '111111111'; 
 const AUTH_STORAGE_KEY = 'app-auth-token'; // Key để lưu xác thực
 
-// --- CÁC ICON MẠNG XÃ HỘI ---
-
-const ZaloIcon: React.FC = () => (
-  // Icon Zalo: Hình vuông bo góc xanh dương, CHỮ 'Zalo' chuẩn text
-  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="48" height="48" rx="10" fill="#0068FF"/>
-    {/* Sử dụng text SVG để đảm bảo chữ Zalo hiển thị đúng chính tả và rõ ràng */}
-    <text x="50%" y="65%" textAnchor="middle" fill="white" fontSize="18" fontFamily="Verdana, sans-serif" fontWeight="900">Zalo</text>
-  </svg>
-);
-
-const YoutubeIcon: React.FC = () => (
-  // Icon YouTube: Hình tròn đỏ
-  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="24" fill="#FF0000"/>
-    <path d="M32 24L18 32V16L32 24Z" fill="white"/>
-  </svg>
-);
-
-const TiktokIcon: React.FC = () => (
-  // Icon TikTok: Hình tròn đen
-  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="24" fill="#000000"/>
-    <path d="M33 15C33 15 30.5 15.5 29 14V27.5C29 32 25.5 33 23.5 32C21.5 31 20 29 21 26.5C22 24 25 24.5 25 24.5V20C25 20 19.5 19 16.5 23.5C13.5 28 16 34 21.5 35.5C27 37 31.5 34 33 29.5V22C33 22 35.5 23 37 23.5V18C37 18 35 17.5 33 15Z" fill="white"/>
-  </svg>
-);
-
-const FacebookIcon: React.FC = () => (
-  // Icon Facebook: Hình tròn xanh dương
-  <svg className="w-8 h-8 hover:scale-110 transition-transform duration-200" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="24" fill="#1877F2"/>
-    <path d="M26.5 36V24H30L31 19H26.5V17C26.5 16 27 15 28.5 15H30V11H27C23.5 11 21.5 12.5 21.5 16.5V19H18V24H21.5V36H26.5Z" fill="white"/>
-  </svg>
-);
-// --- KẾT THÚC ICON ---
-
-
 const App: React.FC = () => {
   // --- TRẠNG THÁI XÁC THỰC ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,7 +29,7 @@ const App: React.FC = () => {
       setApiKey(savedKey);
     }
 
-    // 2. Kiểm tra trạng thái đăng nhập (LOGIC ĐÃ SỬA)
+    // 2. Kiểm tra trạng thái đăng nhập
     const savedAuthToken = localStorage.getItem(AUTH_STORAGE_KEY);
     
     // So sánh token đã lưu với mật khẩu hiện tại trong code
@@ -171,9 +134,26 @@ const App: React.FC = () => {
                     <TabButton tabId="watermarkRemover" label="AI Xóa Watermark" />
                   </div>
 
-                  {/* Khu vực Mạng xã hội bên phải (Căn chỉnh thẳng hàng) */}
+                  {/* Khu vực Mạng xã hội & App Store bên phải */}
                   <div className="flex items-center space-x-6">
-                      {/* Nút Zalo */}
+                      
+                      {/* Nút App Store (MỚI THÊM) */}
+                      <a 
+                        href="https://tiendungjxd.my.canva.site/" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex flex-col items-center group" 
+                        title="App Store"
+                      >
+                          <img 
+                            src="/App Store.png" 
+                            alt="App Store" 
+                            className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"
+                          />
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">App Store</span>
+                      </a>
+
+                      {/* Nút Zalo (Đã thay bằng ảnh PNG) */}
                       <a 
                         href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" 
                         target="_blank" 
@@ -181,11 +161,15 @@ const App: React.FC = () => {
                         className="flex flex-col items-center group" 
                         title="Tham gia nhóm Zalo"
                       >
-                          <ZaloIcon />
+                          <img 
+                            src="/Zalo.png" 
+                            alt="Zalo" 
+                            className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"
+                          />
                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Zalo</span>
                       </a>
 
-                      {/* Nút YouTube */}
+                      {/* Nút YouTube (Đã thay bằng ảnh PNG) */}
                       <a 
                         href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" 
                         target="_blank" 
@@ -193,11 +177,15 @@ const App: React.FC = () => {
                         className="flex flex-col items-center group" 
                         title="Kênh YouTube"
                       >
-                          <YoutubeIcon />
+                          <img 
+                            src="/Youtube.png" 
+                            alt="YouTube" 
+                            className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"
+                          />
                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">YouTube</span>
                       </a>
 
-                      {/* Nút TikTok */}
+                      {/* Nút TikTok (Đã thay bằng ảnh PNG) */}
                       <a 
                         href="https://www.tiktok.com/@chuyendramagiadinh" 
                         target="_blank" 
@@ -205,11 +193,15 @@ const App: React.FC = () => {
                         className="flex flex-col items-center group" 
                         title="Kênh TikTok"
                       >
-                           <TiktokIcon />
+                           <img 
+                            src="/Tiktok.png" 
+                            alt="TikTok" 
+                            className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"
+                          />
                            <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">TikTok</span>
                       </a>
 
-                      {/* Nút Facebook */}
+                      {/* Nút Facebook (Đã thay bằng ảnh PNG) */}
                       <a 
                         href="https://www.facebook.com/ToolsElevenlabsPro" 
                         target="_blank" 
@@ -217,7 +209,11 @@ const App: React.FC = () => {
                         className="flex flex-col items-center group" 
                         title="Trang Facebook"
                       >
-                           <FacebookIcon />
+                           <img 
+                            src="/Facebook.png" 
+                            alt="Facebook" 
+                            className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"
+                          />
                            <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Facebook</span>
                       </a>
                   </div>
@@ -269,7 +265,6 @@ const App: React.FC = () => {
 
       {/* Nội dung chính */}
       <div style={{ display: activeTab === 'scriptGenerator' ? 'block' : 'none' }}>
-        {/* QUAN TRỌNG: Đã thêm prop apiKey vào đây để sửa lỗi */}
         <ScriptGenerator apiKey={apiKey} />
       </div>
       <div style={{ display: activeTab === 'watermarkRemover' ? 'block' : 'none' }}>
