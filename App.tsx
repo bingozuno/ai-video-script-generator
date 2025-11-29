@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import ScriptGenerator from './ScriptGenerator';
 import WatermarkRemover from './WatermarkRemover';
-import { Translation, Language } from './types'; // Import types
+import { Translation, Language } from './types'; 
 
 // --- CẤU HÌNH MẬT KHẨU ---
 const APP_PASSWORD = '111111111'; 
 const AUTH_STORAGE_KEY = 'app-auth-token'; 
 
-// --- TỪ ĐIỂN NGÔN NGỮ (GIẢN LƯỢC CHO APP) ---
+// --- TỪ ĐIỂN NGÔN NGỮ (ĐÃ BỎ ICON CAFE THỪA Ở ĐÂY) ---
 const translations: Record<Language, Translation> = {
   vi: {
     title: "AI Video Script Generator",
@@ -20,7 +20,7 @@ const translations: Record<Language, Translation> = {
     generatingBtn: "Đang tạo...",
     tabScript: "Tạo Kịch Bản Video",
     tabWatermark: "AI Xóa Watermark",
-    buyCoffee: "☕ Mời tôi 1 ly cafe",
+    buyCoffee: "Mời tôi 1 ly cafe", // Đã xóa icon ☕ ở đây
     coffeeTitle: "Mời tôi một ly cà phê",
     coffeeDesc1: "Công cụ miễn phí này được tạo ra bởi “TIẾN DŨNG JXD”.",
     coffeeDesc2: "Nếu bạn cảm thấy hài lòng, một ly cà phê nhỏ từ bạn qua mã QR sẽ là nguồn động lực lớn để tôi tiếp tục phát triển thêm nhiều tiện ích hữu ích cho cộng đồng. Cảm ơn bạn rất nhiều!",
@@ -37,7 +37,7 @@ const translations: Record<Language, Translation> = {
     generatingBtn: "Generating...",
     tabScript: "Video Script Gen",
     tabWatermark: "Watermark Remover",
-    buyCoffee: "☕ Buy me a coffee",
+    buyCoffee: "Buy me a coffee", // Đã xóa icon ☕ ở đây
     coffeeTitle: "Buy me a coffee",
     coffeeDesc1: "This free tool was created by “TIẾN DŨNG JXD”.",
     coffeeDesc2: "If you find it useful, a small coffee via QR code would be a great motivation for me to continue developing more useful tools for the community. Thank you very much!",
@@ -128,7 +128,7 @@ const App: React.FC = () => {
             <h3 className="text-xl font-bold text-yellow-400 mb-4">{t.coffeeTitle}</h3>
             
             <div className="bg-white p-2 rounded-lg inline-block mb-4">
-               {/* ẢNH QR - ĐƯỜNG DẪN /QR.png */}
+               {/* ẢNH QR */}
                <img src="/QR.png" alt="QR Code" className="w-48 h-48 object-contain" />
             </div>
 
@@ -157,13 +157,13 @@ const App: React.FC = () => {
                   {/* Right Actions */}
                   <div className="flex items-center space-x-4 flex-wrap justify-center">
                       
-                      {/* NÚT NGÔN NGỮ (Mới) */}
+                      {/* NÚT NGÔN NGỮ */}
                       <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
                         <button onClick={() => setLang('vi')} className={`px-2 py-1 text-xs font-bold rounded ${lang === 'vi' ? 'bg-red-600 text-white' : 'text-slate-400 hover:text-white'}`}>VN</button>
                         <button onClick={() => setLang('en')} className={`px-2 py-1 text-xs font-bold rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>EN</button>
                       </div>
 
-                      {/* NÚT CAFE (Mới) */}
+                      {/* NÚT CAFE (Chỉ giữ lại icon động trong span, bỏ icon trong text) */}
                       <button 
                         onClick={() => setShowQR(true)}
                         className="flex items-center px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-500/50 text-yellow-300 rounded-full text-xs font-bold transition-all group"
@@ -172,28 +172,34 @@ const App: React.FC = () => {
                         {t.buyCoffee}
                       </button>
 
-                      {/* App Store */}
-                      <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/appstore.png" alt="App Store" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">App Store</span>
+                      {/* App Store (ĐÃ SỬA LẠI TÊN FILE CÓ DẤU CÁCH VÀ CHỮ HOA) */}
+                      <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="App Store">
+                          <img src="/App Store.png" alt="App Store" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">App Store</span>
                       </a>
 
-                      {/* Các Icon MXH (Giữ nguyên) */}
-                      <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/zalo.png" alt="Zalo" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Zalo</span>
+                      {/* Zalo (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
+                      <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Tham gia nhóm Zalo">
+                          <img src="/Zalo.png" alt="Zalo" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Zalo</span>
                       </a>
-                      <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/youtube.png" alt="YouTube" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">YouTube</span>
+
+                      {/* YouTube (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
+                      <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Kênh YouTube">
+                          <img src="/Youtube.png" alt="YouTube" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">YouTube</span>
                       </a>
-                      <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                           <img src="/tiktok.png" alt="TikTok" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">TikTok</span>
+
+                      {/* TikTok (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
+                      <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Kênh TikTok">
+                           <img src="/Tiktok.png" alt="TikTok" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">TikTok</span>
                       </a>
-                      <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                           <img src="/facebook.png" alt="Facebook" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Facebook</span>
+
+                      {/* Facebook (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
+                      <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Trang Facebook">
+                           <img src="/Facebook.png" alt="Facebook" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Facebook</span>
                       </a>
                   </div>
               </div>
