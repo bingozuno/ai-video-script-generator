@@ -50,7 +50,7 @@ export const generateCharacterDefinition = async (
 };
 
 // =========================================================================
-// === CẬP NHẬT PROMPT HỆ THỐNG (PHIÊN BẢN 10.0 - YÊU CẦU MỚI NHẤT) ===
+// === CẬP NHẬT PROMPT HỆ THỐNG ===
 // =========================================================================
 
 const SYSTEM_PROMPT_FROM_IDEA = `
@@ -81,12 +81,6 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
     * NGAY SAU KHI DÁN, bạn phải đọc "Mô tả Kịch bản Chi tiết" của cảnh này.
     * BẮT BUỘC **SỬA LẠI** bản dịch vừa dán để nó khớp với bối cảnh của cảnh.
     * Cụ thể: Sửa lại **Trang phục (Clothing)**, **Hành động (Action)**, và **Biểu cảm (Expression)**, nhưng phải giữ nguyên đặc điểm Cốt lõi (tóc, mắt, mặt, vóc dáng).
-    * *VÍ DỤ QUY TRÌNH:*
-        * *Nguồn Chân Lý (Việt):* \`Haruka Sato: 70 tuổi, người Nhật, tóc bạc búi, mắt nâu hiền từ, nếp nhăn, trang phục thường ngày là áo chàm...\`
-        * *Kịch bản Cảnh nói:* "Haruka đang mặc kimono trong phòng trà."
-        * *AI thực hiện Bước 1 (Dịch):* \`Haruka Sato: 70 years old, Japanese, silver hair in a bun, kind brown eyes, wrinkles, usual attire is an indigo blouse...\`
-        * *AI thực hiện Bước 2 (Dán):* (Dán toàn bộ bản dịch vào prompt)
-        * *AI thực hiện Bước 3 (Sửa):* \`Haruka Sato, a 70-year-old Japanese woman, with silver-white hair in a neat bun, dark brown kindly eyes, and a face with age wrinkles, <xóa 'usual attire...'> is wearing a light brown samue (home kimono), sitting serenely...\`
 
 * **CẢNH BÁO TỐI CAO:** Lặp lại quy trình "DỊCH, DÁN VÀ SỬA" này cho **MỌI NHÂN VẬT** được định nghĩa có mặt trong cảnh. Phải thêm các từ khóa như "consistent character", "same appearance as described", "no variations in features" để nhấn mạnh. Nếu cảnh có 3 nhân vật, tôi muốn thấy 3 MÔ TẢ ĐẦY ĐỦ ĐÃ ĐƯỢC DỊCH VÀ SỬA. Nếu bạn chỉ viết tên ('Haruka Sato'), bạn đã THẤT BẠI.
 
@@ -99,7 +93,6 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
 {{PROMPT_GENERATION_INSTRUCTIONS}}
 
 **Tiêu chuẩn đầu ra BẮT BUỘC:**
-(Giữ nguyên các tiêu chuẩn về Bảng Phân cảnh, cấm lời chào, v.v.)
 1.  **Bảng Phân cảnh:** Trình bày dưới dạng bảng Markdown. BẮT ĐẦU VỚI DÒNG "### Bảng Phân cảnh". Bảng phải có 5 cột với tiêu đề chính xác như sau: "STT/Phân cảnh", "Thời gian (8 giây)", "Mô tả Kịch bản Chi tiết", "Prompt Tạo Ảnh (Whisk AI)", "Prompt Tạo Chuyển động (Veo 3.1)".
     * **Prompt Tạo Ảnh (Whisk AI):** Prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên.
     * **Prompt Tạo Chuyển động (Veo 3.1):** Prompt riêng biệt bằng **TIẾNG ANH**, phải là một chuỗi JSON hợp lệ.
@@ -134,12 +127,6 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
     * NGAY SAU KHI DÁN, bạn phải đọc "Mô tả Kịch bản Chi tiết" của cảnh này.
     * BẮT BUỘC **SỬA LẠI** bản dịch vừa dán để nó khớp với bối cảnh của cảnh.
     * Cụ thể: Sửa lại **Trang phục (Clothing)**, **Hành động (Action)**, và **Biểu cảm (Expression)**, nhưng phải giữ nguyên đặc điểm Cốt lõi (tóc, mắt, mặt, vóc dáng).
-    * *VÍ DỤ QUY TRÌNH:*
-        * *Nguồn Chân Lý (Việt):* \`Haruka Sato: 70 tuổi, người Nhật, tóc bạc búi, mắt nâu hiền từ, nếp nhăn, trang phục thường ngày là áo chàm...\`
-        * *Kịch bản Cảnh nói:* "Haruka đang mặc kimono trong phòng trà."
-        * *AI thực hiện Bước 1 (Dịch):* \`Haruka Sato: 70 years old, Japanese, silver hair in a bun, kind brown eyes, wrinkles, usual attire is an indigo blouse...\`
-        * *AI thực hiện Bước 2 (Dán):* (Dán toàn bộ bản dịch vào prompt)
-        * *AI thực hiện Bước 3 (Sửa):* \`Haruka Sato, a 70-year-old Japanese woman, with silver-white hair in a neat bun, dark brown kindly eyes, and a face with age wrinkles, <xóa 'usual attire...'> is wearing a light brown samue (home kimono), sitting serenely...\`
 
 * **CẢNH BÁO TỐI CAO:** Lặp lại quy trình "DỊCH, DÁN VÀ SỬA" này cho **MỌI NHÂN VẬT** được định nghĩa có mặt trong cảnh. Phải thêm các từ khóa như "consistent character", "same appearance as described", "no variations in features" để nhấn mạnh. Nếu cảnh có 3 nhân vật, tôi muốn thấy 3 MÔ TẢ ĐẦY ĐỦ ĐÃ ĐƯỢC DỊCH VÀ SỬA. Nếu bạn chỉ viết tên ('Haruka Sato'), bạn đã THẤT BẠI.
 
@@ -208,7 +195,8 @@ Khi tạo "Prompt Tạo Ảnh" cho phong cách này, BẮT BUỘC tuân thủ:
 
 // --- CÁC HÀM HELPERS ---
 
-// --- HÀM PHÂN TÍCH (PARSER) ĐÃ ĐƯỢC NÂNG CẤP ĐỂ XỬ LÝ DÒNG MỚI (NEWLINES) TRONG JSON ---
+// --- FIX LỖI PARSER (QUAN TRỌNG) ---
+// Hàm này được viết lại để xử lý trường hợp AI trả về bảng bị dồn dòng (dùng dấu || thay vì xuống dòng)
 const parseGeminiResponse = (responseText: string): Script => {
   try {
     const tableMatch = responseText.match(/### Bảng Phân cảnh\s*([\s\S]*)/);
@@ -216,7 +204,13 @@ const parseGeminiResponse = (responseText: string): Script => {
       throw new Error("Không tìm thấy '### Bảng Phân cảnh' trong phản hồi. Định dạng không hợp lệ.");
     }
     
-    const tableContent = tableMatch[1].trim();
+    let tableContent = tableMatch[1].trim();
+    
+    // BƯỚC XỬ LÝ QUAN TRỌNG:
+    // Thay thế các dấu "||" (mà AI hay dùng để ngắt dòng lỗi) thành "\n|" để tách dòng chuẩn.
+    // Đồng thời xử lý trường hợp "| **Số** |" bị dính liền.
+    tableContent = tableContent.replace(/\|\|\s*(\**\d+\**)\s*\|/g, '\n| $1 |');
+    
     // 1. Tách dòng
     const rawLines = tableContent.split('\n');
     
@@ -225,8 +219,8 @@ const parseGeminiResponse = (responseText: string): Script => {
     let currentBuffer = "";
 
     // Regex nhận diện dòng mới: Bắt đầu bằng dấu | (có thể có khoảng trắng) và số thứ tự
-    // Ví dụ: | 1 | hoặc | Cảnh 1 | hoặc | 01 |
-    const rowStartRegex = /^\|\s*(?:Cảnh\s*)?\d+\s*\|/;
+    // Ví dụ: | 1 | hoặc | **1** | hoặc | 01 |
+    const rowStartRegex = /^\|\s*(?:Cảnh\s*)?(?:\*\*)?\d+(?:\*\*)?\s*\|/;
 
     for (const line of rawLines) {
         const trimmed = line.trim();
@@ -261,10 +255,8 @@ const parseGeminiResponse = (responseText: string): Script => {
       // Tách cột bằng dấu |
       const columns = row.split('|').map(cell => cell.trim()).slice(1, -1); 
       
-      // Nếu thiếu cột, thử cảnh báo (nhưng code gộp dòng đã giảm thiểu lỗi này)
       if (columns.length < 5) {
-        console.warn(`Hàng ${index + 1} có vẻ thiếu cột. Số cột: ${columns.length}`, row);
-        // Có thể trả về null hoặc cố gắng cứu dữ liệu, ở đây ta trả về null để filter
+        console.warn(`Hàng ${index + 1} thiếu cột. Số cột: ${columns.length}`, row);
         return null;
       }
 
@@ -280,7 +272,7 @@ const parseGeminiResponse = (responseText: string): Script => {
     }).filter((scene): scene is Scene => scene !== null);
 
     if (scenes.length === 0) {
-        throw new Error("Không thể phân tích bất kỳ cảnh nào từ phản hồi của AI. Vui lòng thử lại với một ý tưởng khác hoặc kiểm tra định dạng phản hồi.");
+        throw new Error("Không thể phân tích bất kỳ cảnh nào. AI trả về định dạng bảng bị lỗi.");
     }
 
     return { scenes };
@@ -657,8 +649,11 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     const responseText = response.text;
     if (!responseText) throw new Error("Phản hồi trống.");
     
+    // FIX LỖI CRITICAL: Xóa bỏ markdown code block nếu AI lỡ trả về (```json ... ```)
+    const cleanJson = responseText.replace(/^```json|```$/g, '').trim();
+
     // Parse JSON
-    const result = JSON.parse(responseText);
+    const result = JSON.parse(cleanJson);
     
     // Đảm bảo motionPrompt luôn là string, nếu AI trả về object thì stringify lại
     let finalMotionPrompt = "";

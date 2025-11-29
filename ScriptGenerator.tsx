@@ -6,7 +6,7 @@ import InputForm, { defaultStyles, defaultAspectRatios } from './components/Inpu
 import ScriptDisplay from './components/ScriptDisplay';
 import ImageModal from './components/ImageModal';
 
-// --- CÁC HÀM CHIA VĂN BẢN (Logic xử lý văn bản dài) ---
+// --- CÁC HÀM CHIA VĂN BẢN (Giữ nguyên không đổi) ---
 const splitTextIntoChaptersLocally = (text: string, rangeStr: string): string[] => {
   const targetChars = parseInt(rangeStr, 10);
   if (isNaN(targetChars) || targetChars <= 0) return text ? [text.trim()] : [];
@@ -484,7 +484,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
 
   return (
     <>
-      {/* HEADER được truyền ngôn ngữ (Fix lỗi tiêu đề không dịch) */}
+      {/* HEADER được truyền ngôn ngữ */}
       <Header lang={lang} /> 
       
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

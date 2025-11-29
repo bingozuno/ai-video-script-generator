@@ -8,14 +8,14 @@ interface ScriptDisplayProps {
   storyChapters: StoryChapter[];
   isLoading: boolean;
   error: string | null;
-  lang?: 'vi' | 'en'; // Thêm prop ngôn ngữ (optional để tránh lỗi file khác chưa truyền)
+  lang?: 'vi' | 'en'; 
   onGenerateImage: (index: number) => void;
   onRegeneratePrompt: (index: number) => void;
   onOpenImage: (src: string, name: string) => void;
 }
 
 const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ 
-  script, storyChapters, isLoading, error, lang = 'vi', // Mặc định là 'vi'
+  script, storyChapters, isLoading, error, lang = 'vi',
   onGenerateImage, onRegeneratePrompt, onOpenImage 
 }) => {
   
@@ -95,13 +95,14 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
           {t.title}
         </h2>
         <div className="flex space-x-2">
-            <button onClick={handleDownloadTxt} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+            {/* ĐÃ SỬA MÀU NÚT Ở ĐÂY */}
+            <button onClick={handleDownloadTxt} disabled={!script} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
                ⬇ {t.downloadTxt}
             </button>
-            <button onClick={handleDownloadPromptTxt} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+            <button onClick={handleDownloadPromptTxt} disabled={!script} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
                ⬇ {t.downloadPrompt}
             </button>
-            <button onClick={handleDownloadExcel} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+            <button onClick={handleDownloadExcel} disabled={!script} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
                ⬇ {t.downloadExcel}
             </button>
         </div>
@@ -117,7 +118,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
             onGenerateImage={onGenerateImage}
             onRegeneratePrompt={onRegeneratePrompt}
             onOpenImage={onOpenImage}
-            lang={lang} // Truyền lang xuống Table nếu cần, ở đây Table chưa sửa nhưng ta cứ truyền
+            lang={lang}
         />
       )}
     </div>
