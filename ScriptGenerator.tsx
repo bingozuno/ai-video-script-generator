@@ -119,9 +119,11 @@ const splitTextIntoNChapters = (text: string, numChapters: number): string[] => 
 
 interface ScriptGeneratorProps {
   apiKey: string;
+  lang: 'vi' | 'en'; // Nhận ngôn ngữ
+  onAllFinished?: () => void; // Callback khi xong hết
 }
 
-const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
+const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFinished }) => {
   const [script, setScript] = useState<Script | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +135,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   const [styles, setStyles] = useState<StyleInfo[]>([]);
   const [selectedStylePrompts, setSelectedStylePrompts] = useState<string[]>([]);
   const [characterReferences, setCharacterReferences] = useState<CharacterReference[]>([
-    { id: `char-${Date.now()}`, name: 'Nhân vật 1', imageBase64: null, fileType: null, description: '', isAnalyzing: false },
+    { id: `char-${Date.now()}`, name: lang === 'vi' ? 'Nhân vật 1' : 'Character 1', imageBase64: null, fileType: null, description: '', isAnalyzing: false },
   ]);
   const [characterDefinition, setCharacterDefinition] = useState<string>('');
   const [aspectRatios, setAspectRatios] = useState(defaultAspectRatios);
@@ -183,7 +185,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
   const handleCloseImageModal = () => setModalImage(null);
 
   const handleSplitStory = () => {
-    if (!longStoryInput.trim()) { setError("Vui lòng nhập câu chuyện để chia."); return; }
+    if (!longStoryInput.trim()) { setError(lang === 'vi' ? "Vui lòng nhập câu chuyện để chia." : "Please enter story."); return; }
     setError(null);
     try {
       let chapters: string[] = [];
@@ -227,7 +229,13 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
     
     // Nếu đã hoàn thành hết
     if (completedCount >= totalChapters) {
-        if (!isAutoRunning) alert("Đã hoàn thành tạo prompt cho tất cả các chương!");
+        if (isAutoRunning) {
+            setIsAutoRunning(false);
+            // GỌI CALLBACK ĐỂ HIỆN QR
+            if (onAllFinished) onAllFinished();
+        } else {
+            alert(lang === 'vi' ? "Đã hoàn thành tạo prompt cho tất cả các chương!" : "All finished!");
+        }
         return;
     }
 
@@ -310,7 +318,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
     // Điều kiện dừng: Khi đã làm xong hết các chương
     else if (completedCount >= storyChapters.length && isAutoRunning) {
         setIsAutoRunning(false);
-        alert("Đã hoàn thành tạo prompt cho TẤT CẢ các chương!");
+        // GỌI CALLBACK KHI HOÀN THÀNH TỰ ĐỘNG
+        if (onAllFinished) onAllFinished();
     }
 
     return () => clearTimeout(timeout);
@@ -517,7 +526,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey }) => {
                   onClick={handleGenerateScript}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                 >
-                  Tiếp tục tạo chương tiếp theo
+                  {lang === 'vi' ? 'Tiếp tục tạo chương tiếp theo' : 'Continue generating next batch'}
                 </button>
             </div>
         )}

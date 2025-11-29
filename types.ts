@@ -6,7 +6,7 @@ export interface Scene {
   motionPrompt: string;
   generatedImages?: string[];
   isGeneratingImages?: boolean;
-  isRegeneratingPrompt?: boolean; // <-- THÊM DÒNG NÀY
+  isRegeneratingPrompt?: boolean;
 }
 
 export interface Script {
@@ -41,7 +41,7 @@ export interface ProjectState {
   generateMotion: boolean;
   includeMusic: boolean;
   dialogueLanguage: string;
-  limitCharacterCount: boolean; // <--- THÊM MỚI: Giới hạn 3 nhân vật
+  limitCharacterCount: boolean;
   script: Script | null;
 }
 
@@ -57,4 +57,26 @@ export interface StorytellingScene {
 export interface StoryChapter {
   id: string;
   text: string;
+}
+
+// --- THÊM PHẦN ĐA NGÔN NGỮ ---
+export type Language = 'vi' | 'en';
+
+export interface Translation {
+  title: string;
+  ideaMode: string;
+  scriptMode: string;
+  inputPlaceholder: string;
+  styleLabel: string;
+  ratioLabel: string;
+  generateBtn: string;
+  generatingBtn: string;
+  // Thêm các từ khóa khác nếu cần
+  tabScript: string;
+  tabWatermark: string;
+  buyCoffee: string;
+  coffeeTitle: string;
+  coffeeDesc1: string;
+  coffeeDesc2: string;
+  close: string;
 }

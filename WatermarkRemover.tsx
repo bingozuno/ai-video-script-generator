@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
 import ImageModal from './components/ImageModal';
-import ImageCard from './components/ImageCard'; // SỬA LỖI: Thêm import này (đã có trong file gốc)
+import ImageCard from './components/ImageCard'; 
 
 // =================================================================================
 // TYPES (Giữ nguyên)
@@ -41,11 +41,10 @@ export interface ImageFile {
 }
 
 // =================================================================================
-// GEMINI SERVICE (Đã sửa)
+// GEMINI SERVICE (Giữ nguyên logic)
 // =================================================================================
 
 const fileToBase64 = (file: File): Promise<string> => {
-  // ... (Hàm này giữ nguyên) ...
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -60,19 +59,16 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// SỬA LỖI: Thêm tham số `apiKey`
 const removeWatermark = async (
   file: File,
   locations: WatermarkLocation[],
-  apiKey: string // <-- ĐÃ THÊM
+  apiKey: string 
 ): Promise<string> => {
     
-    // SỬA LỖI: Kiểm tra `apiKey` được truyền vào
     if (!apiKey) {
         throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
     }
     
-    // SỬA LỖI: Sử dụng `apiKey` được truyền vào
     const ai = new GoogleGenAI({ apiKey });
 
     const base64Data = await fileToBase64(file);
@@ -88,7 +84,7 @@ const removeWatermark = async (
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash-image',
+                model: 'gemini-2.5-flash-image', // Hoặc gemini-2.0-flash-exp
                 contents: {
                     parts: [
                         {
@@ -135,7 +131,6 @@ const removeWatermark = async (
 
 // --- Dropzone Component ---
 const UploadIcon = () => (
-    // ... (Giữ nguyên) ...
     <svg className="w-12 h-12 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
 );
 
@@ -146,7 +141,6 @@ interface DropzoneProps {
 }
 
 const Dropzone: React.FC<DropzoneProps> = ({ onFilesAdded, maxFiles, currentFileCount }) => {
-  // ... (Giữ nguyên) ...
   const [isDragActive, setIsDragActive] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -210,13 +204,8 @@ const Dropzone: React.FC<DropzoneProps> = ({ onFilesAdded, maxFiles, currentFile
 };
 
 
-// --- ImageCard Component ---
-// (Component này đã được import từ file riêng)
-
-
 // --- Controls Component ---
 const CheckboxIcon = ({ checked }: { checked: boolean }) => (
-    // ... (Giữ nguyên) ...
     <svg className="w-5 h-5 mr-2 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="24" height="24" rx="6" fill={checked ? "#4f46e5" : "#475569"} />
         {checked && <path d="M7 12.5L10.5 16L17 9.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
@@ -246,7 +235,6 @@ const Controls: React.FC<ControlsProps> = ({
   completedFilesCount,
   totalFilesCount,
 }) => {
-  // ... (Giữ nguyên) ...
   const allLocations = Object.values(WatermarkLocation);
 
   return (
@@ -304,19 +292,20 @@ const Controls: React.FC<ControlsProps> = ({
 
 
 // =================================================================================
-// MAIN APP COMPONENT (Đã sửa)
+// MAIN APP COMPONENT (Đã sửa để nhận apiKey và lang)
 // =================================================================================
 
 const MAX_FILES = 50;
 const CONCURRENCY_LIMIT = 5;
 
-// SỬA LỖI: Thêm `apiKey` vào props
+// SỬA LỖI: Thêm `apiKey` và `lang` vào props
 interface WatermarkRemoverProps {
   apiKey: string;
+  lang: 'vi' | 'en'; // Nhận thêm ngôn ngữ
 }
 
-// SỬA LỖI: Nhận `{ apiKey }` từ props
-const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
+// SỬA LỖI: Nhận `{ apiKey, lang }` từ props
+const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey, lang }) => {
   const [files, setFiles] = useState<ImageFile[]>([]);
   const [watermarkLocations, setWatermarkLocations] = useState<Set<WatermarkLocation>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
@@ -359,13 +348,12 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
     } finally {
         setIsProcessing(false);
     }
-  }, [files, watermarkLocations, apiKey]); // <-- SỬA LỖI: Thêm `apiKey` vào dependencies
+  }, [files, watermarkLocations, apiKey]); 
 
   const handleReprocessImage = useCallback(async (id: string) => {
     const imageFileToReprocess = files.find(f => f.id === id);
     if (!imageFileToReprocess) return;
 
-    // SỬA LỖI: Kiểm tra apiKey trước khi chạy
     if (!apiKey) {
       alert("Vui lòng nhập Gemini API Key của bạn ở đầu trang để xử lý ảnh.");
       return;
@@ -374,12 +362,11 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
     setFiles(prev => prev.map(f => f.id === id ? { 
         ...f, 
         status: ProcessStatus.Processing,
-        error: undefined // Clear previous error
+        error: undefined 
     } : f));
 
     try {
         const locations = [...watermarkLocations];
-        // SỬA LỖI: Truyền `apiKey` vào hàm
         const resultBase64 = await removeWatermark(imageFileToReprocess.file, locations, apiKey);
         const processedURL = `data:image/png;base64,${resultBase64}`;
         
@@ -396,21 +383,17 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
             error 
         } : f));
     }
-  }, [files, watermarkLocations, apiKey]); // <-- SỬA LỖI: Thêm `apiKey` vào dependencies
+  }, [files, watermarkLocations, apiKey]);
 
-  // --- CÁC HÀM CÒN LẠI (Giữ nguyên) ---
   useEffect(() => {
-    // ... (Giữ nguyên) ...
     return () => {
       files.forEach(f => {
         URL.revokeObjectURL(f.originalURL);
-        // No need to revoke processedURL as it's a data URL now
       });
     };
   }, [files]);
 
   const addFiles = useCallback((newFiles: File[]) => {
-    // ... (Giữ nguyên) ...
     const filesToAdd = newFiles.slice(0, MAX_FILES - files.length);
     const imageFileObjects: ImageFile[] = filesToAdd.map(file => ({
       id: crypto.randomUUID(),
@@ -422,7 +405,6 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
   }, [files.length]);
 
   const deleteFile = useCallback((id: string) => {
-    // ... (Giữ nguyên) ...
     setFiles(prev => {
       const fileToDelete = prev.find(f => f.id === id);
       if (fileToDelete) {
@@ -433,7 +415,6 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
   }, []);
 
   const clearAll = useCallback(() => {
-    // ... (Giữ nguyên) ...
     files.forEach(f => {
       URL.revokeObjectURL(f.originalURL);
     });
@@ -441,7 +422,6 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
   }, [files]);
   
   const handleLocationChange = (location: WatermarkLocation, checked: boolean) => {
-    // ... (GiHãy nguyên) ...
     setWatermarkLocations(prev => {
       const newSet = new Set(prev);
       if (checked) {
@@ -454,17 +434,14 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
   };
 
   const handleOpenImageModal = (src: string, name: string) => {
-    // ... (Giữ nguyên) ...
     setModalImage({ src, name });
   };
 
   const handleCloseImageModal = () => {
-    // ... (Giữ nguyên) ...
     setModalImage(null);
   };
   
   const downloadAll = () => {
-    // ... (GifY nguyên) ...
     files.forEach(f => {
       if (f.status === ProcessStatus.Completed && f.processedURL) {
         const originalFilename = f.file.name;
@@ -487,15 +464,14 @@ const WatermarkRemover: React.FC<WatermarkRemoverProps> = ({ apiKey }) => {
   const pendingFilesCount = files.filter(f => f.status === ProcessStatus.Pending).length;
 
   return (
-    // TOÀN BỘ PHẦN JSX (return) BÊN DƯỚI ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">
-            AI Xóa Watermark
+            {lang === 'vi' ? 'AI Xóa Watermark' : 'AI Watermark Remover'}
           </h1>
           <p className="mt-2 text-lg text-slate-300">
-            Xóa hàng loạt watermark khỏi ảnh của bạn.
+            {lang === 'vi' ? 'Xóa hàng loạt watermark khỏi ảnh của bạn.' : 'Bulk remove watermarks from your images.'}
           </p>
         </header>
 
