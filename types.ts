@@ -59,11 +59,23 @@ export interface StoryChapter {
   text: string;
 }
 
-// --- THÊM PHẦN ĐA NGÔN NGỮ ---
+// --- ĐỊNH NGHĨA NGÔN NGỮ ---
 export type Language = 'vi' | 'en';
 
 export interface Translation {
   title: string;
+  // Header Text
+  headerTitle: string;
+  headerSubtitle: string;
+  developedBy: string;
+  // API Bar
+  apiKeyLabel: string;
+  getKey: string;
+  save: string;
+  delete: string;
+  savedMsg: string;
+  deletedMsg: string;
+  // Main UI
   ideaMode: string;
   scriptMode: string;
   inputPlaceholder: string;
@@ -71,7 +83,6 @@ export interface Translation {
   ratioLabel: string;
   generateBtn: string;
   generatingBtn: string;
-  // Thêm các từ khóa khác nếu cần
   tabScript: string;
   tabWatermark: string;
   buyCoffee: string;

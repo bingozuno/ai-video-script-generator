@@ -7,10 +7,19 @@ import { Translation, Language } from './types';
 const APP_PASSWORD = '111111111'; 
 const AUTH_STORAGE_KEY = 'app-auth-token'; 
 
-// --- TỪ ĐIỂN NGÔN NGỮ (ĐÃ BỎ ICON CAFE THỪA Ở ĐÂY) ---
+// --- TỪ ĐIỂN NGÔN NGỮ ---
 const translations: Record<Language, Translation> = {
   vi: {
     title: "AI Video Script Generator",
+    headerTitle: "Chia Cảnh & Tạo Prompt, Tạo Ảnh Trước Khi Tạo Voice",
+    headerSubtitle: "Biến ý tưởng của bạn thành kịch bản video chi tiết...",
+    developedBy: "PHÁT TRIỂN BỞI TIẾN DŨNG JXD",
+    apiKeyLabel: "Gemini API Key (Đã lưu vào trình duyệt của bạn)",
+    getKey: "Lấy Key",
+    save: "Lưu",
+    delete: "Xóa",
+    savedMsg: "Đã lưu API Key!",
+    deletedMsg: "Đã xóa API Key!",
     ideaMode: "Từ Ý Tưởng",
     scriptMode: "Từ Kịch Bản",
     inputPlaceholder: "Nhập nội dung...",
@@ -20,7 +29,7 @@ const translations: Record<Language, Translation> = {
     generatingBtn: "Đang tạo...",
     tabScript: "Tạo Kịch Bản Video",
     tabWatermark: "AI Xóa Watermark",
-    buyCoffee: "Mời tôi 1 ly cafe", // Đã xóa icon ☕ ở đây
+    buyCoffee: "Mời tôi 1 ly cafe",
     coffeeTitle: "Mời tôi một ly cà phê",
     coffeeDesc1: "Công cụ miễn phí này được tạo ra bởi “TIẾN DŨNG JXD”.",
     coffeeDesc2: "Nếu bạn cảm thấy hài lòng, một ly cà phê nhỏ từ bạn qua mã QR sẽ là nguồn động lực lớn để tôi tiếp tục phát triển thêm nhiều tiện ích hữu ích cho cộng đồng. Cảm ơn bạn rất nhiều!",
@@ -28,6 +37,15 @@ const translations: Record<Language, Translation> = {
   },
   en: {
     title: "AI Video Script Generator",
+    headerTitle: "Scene Splitting & Prompt Gen, Image Gen Before Voice",
+    headerSubtitle: "Turn your ideas into detailed video scripts...",
+    developedBy: "DEVELOPED BY TIẾN DŨNG JXD",
+    apiKeyLabel: "Gemini API Key (Saved in browser)",
+    getKey: "Get Key",
+    save: "Save",
+    delete: "Delete",
+    savedMsg: "API Key Saved!",
+    deletedMsg: "API Key Deleted!",
     ideaMode: "From Idea",
     scriptMode: "From Script",
     inputPlaceholder: "Enter content...",
@@ -37,7 +55,7 @@ const translations: Record<Language, Translation> = {
     generatingBtn: "Generating...",
     tabScript: "Video Script Gen",
     tabWatermark: "Watermark Remover",
-    buyCoffee: "Buy me a coffee", // Đã xóa icon ☕ ở đây
+    buyCoffee: "Buy me a coffee",
     coffeeTitle: "Buy me a coffee",
     coffeeDesc1: "This free tool was created by “TIẾN DŨNG JXD”.",
     coffeeDesc2: "If you find it useful, a small coffee via QR code would be a great motivation for me to continue developing more useful tools for the community. Thank you very much!",
@@ -86,8 +104,8 @@ const App: React.FC = () => {
     } else { setAuthError('Mật khẩu không đúng!'); }
   };
 
-  const handleSaveKey = () => { localStorage.setItem(API_STORAGE_KEY, apiKey); alert('Đã lưu API Key!'); };
-  const handleClearKey = () => { localStorage.removeItem(API_STORAGE_KEY); setApiKey(''); alert('Đã xóa API Key!'); };
+  const handleSaveKey = () => { localStorage.setItem(API_STORAGE_KEY, apiKey); alert(t.savedMsg); };
+  const handleClearKey = () => { localStorage.removeItem(API_STORAGE_KEY); setApiKey(''); alert(t.deletedMsg); };
 
   // --- CALLBACK KHI TẠO XONG HẾT ---
   const handleGenerationFinished = () => {
@@ -128,7 +146,7 @@ const App: React.FC = () => {
             <h3 className="text-xl font-bold text-yellow-400 mb-4">{t.coffeeTitle}</h3>
             
             <div className="bg-white p-2 rounded-lg inline-block mb-4">
-               {/* ẢNH QR */}
+               {/* ẢNH QR - ĐƯỜNG DẪN /QR.png */}
                <img src="/QR.png" alt="QR Code" className="w-48 h-48 object-contain" />
             </div>
 
@@ -163,7 +181,7 @@ const App: React.FC = () => {
                         <button onClick={() => setLang('en')} className={`px-2 py-1 text-xs font-bold rounded ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>EN</button>
                       </div>
 
-                      {/* NÚT CAFE (Chỉ giữ lại icon động trong span, bỏ icon trong text) */}
+                      {/* NÚT CAFE */}
                       <button 
                         onClick={() => setShowQR(true)}
                         className="flex items-center px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-500/50 text-yellow-300 rounded-full text-xs font-bold transition-all group"
@@ -172,34 +190,28 @@ const App: React.FC = () => {
                         {t.buyCoffee}
                       </button>
 
-                      {/* App Store (ĐÃ SỬA LẠI TÊN FILE CÓ DẤU CÁCH VÀ CHỮ HOA) */}
-                      <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="App Store">
-                          <img src="/App Store.png" alt="App Store" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">App Store</span>
+                      {/* App Store (Giữ nguyên tên file ảnh) */}
+                      <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                          <img src="/App Store.png" alt="App Store" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">App Store</span>
                       </a>
 
-                      {/* Zalo (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
-                      <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Tham gia nhóm Zalo">
-                          <img src="/Zalo.png" alt="Zalo" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Zalo</span>
+                      {/* Các Icon MXH (Giữ nguyên tên file ảnh) */}
+                      <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                          <img src="/Zalo.png" alt="Zalo" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Zalo</span>
                       </a>
-
-                      {/* YouTube (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
-                      <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Kênh YouTube">
-                          <img src="/Youtube.png" alt="YouTube" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">YouTube</span>
+                      <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                          <img src="/Youtube.png" alt="YouTube" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
+                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">YouTube</span>
                       </a>
-
-                      {/* TikTok (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
-                      <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Kênh TikTok">
-                           <img src="/Tiktok.png" alt="TikTok" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">TikTok</span>
+                      <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                           <img src="/Tiktok.png" alt="TikTok" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">TikTok</span>
                       </a>
-
-                      {/* Facebook (ĐÃ SỬA LẠI TÊN FILE CHỮ HOA) */}
-                      <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group" title="Trang Facebook">
-                           <img src="/Facebook.png" alt="Facebook" className="w-8 h-8 object-contain hover:scale-110 transition-transform duration-200"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white transition-colors">Facebook</span>
+                      <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
+                           <img src="/Facebook.png" alt="Facebook" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
+                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Facebook</span>
                       </a>
                   </div>
               </div>
@@ -208,12 +220,12 @@ const App: React.FC = () => {
       
       {/* API Key Input */}
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-slate-700 bg-slate-800/50">
-        <label htmlFor="api-key-input" className="block text-sm font-medium text-yellow-400 mb-2">Gemini API Key</label>
+        <label htmlFor="api-key-input" className="block text-sm font-medium text-yellow-400 mb-2">{t.apiKeyLabel}</label>
         <div className="flex">
           <input id="api-key-input" type="password" placeholder="API Key..." className="flex-grow bg-slate-700 border border-slate-600 rounded-l-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-yellow-500" value={apiKey} onChange={(e) => setApiKey(e.target.value)}/>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 px-4 py-2 bg-yellow-600 text-slate-900 text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center">Lấy Key</a>
-          <button type="button" onClick={handleSaveKey} className="flex-shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700">Lưu</button>
-          <button type="button" onClick={handleClearKey} className="flex-shrink-0 px-4 py-2 bg-red-600 text-white rounded-r-md text-sm font-semibold hover:bg-red-700">Xóa</button>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 px-4 py-2 bg-yellow-600 text-slate-900 text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center">{t.getKey}</a>
+          <button type="button" onClick={handleSaveKey} className="flex-shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700">{t.save}</button>
+          <button type="button" onClick={handleClearKey} className="flex-shrink-0 px-4 py-2 bg-red-600 text-white rounded-r-md text-sm font-semibold hover:bg-red-700">{t.delete}</button>
         </div>
       </div>
 

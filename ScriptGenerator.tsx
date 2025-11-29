@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Script, CharacterReference, StyleInfo, ProjectState, StoryChapter, Language } from './types';
+import type { Script, CharacterReference, StyleInfo, ProjectState, StoryChapter } from './types';
 import { generateScript, generateImagesFromPrompt, generateCharacterDefinition, regenerateScenePrompts } from './services/geminiService';
 import Header from './components/Header';
 import InputForm, { defaultStyles, defaultAspectRatios } from './components/InputForm';
@@ -484,12 +484,14 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
 
   return (
     <>
-      <Header />
+      {/* HEADER được truyền ngôn ngữ (Fix lỗi tiêu đề không dịch) */}
+      <Header lang={lang} /> 
+      
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-slate-800/50 p-6 rounded-lg shadow-lg border border-slate-700">
           <InputForm
             apiKey={apiKey} 
-            lang={lang} // Truyền ngôn ngữ
+            lang={lang} 
             characterSource={characterSource}
             setCharacterSource={setCharacterSource}
             mode={mode} ideaInput={ideaInput} longStoryInput={longStoryInput} chapterSplitRange={chapterSplitRange}
@@ -497,31 +499,28 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
             aspectRatio={aspectRatio} generateImage={generateImage} generateMotion={generateMotion} includeMusic={includeMusic}
             dialogueLanguage={dialogueLanguage} isLoading={isLoading} isSplitting={false} isGeneratingDef={isGeneratingDef}
             styles={styles} aspectRatios={aspectRatios} storyChapters={storyChapters} splitMode={splitMode} numberOfChapters={numberOfChapters}
-            
-            limitCharacterCount={limitCharacterCount}
-            setLimitCharacterCount={setLimitCharacterCount}
-
+            limitCharacterCount={limitCharacterCount} setLimitCharacterCount={setLimitCharacterCount}
             setMode={setMode} setIdeaInput={setIdeaInput} setLongStoryInput={setLongStoryInput} setChapterSplitRange={setChapterSplitRange}
             setSelectedStylePrompts={setSelectedStylePrompts} setCharacterReferences={setCharacterReferences} setCharacterDefinition={setCharacterDefinition}
             setAspectRatio={setAspectRatio} setGenerateImage={setGenerateImage} setGenerateMotion={setGenerateMotion} setIncludeMusic={setIncludeMusic}
             setDialogueLanguage={setDialogueLanguage} setStyles={setStyles} setAspectRatios={setAspectRatios} setStoryChapters={setStoryChapters}
             setSplitMode={setSplitMode} setNumberOfChapters={setNumberOfChapters}
-            
-            onSubmit={handleGenerateScript} 
-            onExport={handleExportProject} onImport={handleImportProject} onSplitStory={handleSplitStory}
+            onSubmit={handleGenerateScript} onExport={handleExportProject} onImport={handleImportProject} onSplitStory={handleSplitStory}
             onGenerateCharacterDefinition={handleGenerateCharacterDefinition}
           />
         </div>
+        
         <ScriptDisplay 
-          script={script} 
-          storyChapters={storyChapters}
-          isLoading={isLoading} 
-          error={error} 
-          lang={lang} // Truyền ngôn ngữ
-          onGenerateImage={handleGenerateImage}
-          onRegeneratePrompt={handleRegeneratePrompt}
-          onOpenImage={handleOpenImageModal}
+            script={script} 
+            storyChapters={storyChapters} 
+            isLoading={isLoading} 
+            error={error} 
+            lang={lang} 
+            onGenerateImage={handleGenerateImage} 
+            onRegeneratePrompt={handleRegeneratePrompt} 
+            onOpenImage={handleOpenImageModal}
         />
+
         {/* Nút reset tiện ích (nếu cần hiển thị ở UI) */}
         {completedCount > 0 && completedCount < storyChapters.length && !isLoading && !isAutoRunning && (
             <div className="text-center mt-4">
