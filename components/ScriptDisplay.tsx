@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Script, StoryChapter } from '../types';
+import CodeBlock from './CodeBlock';
 import SceneTable from './SceneTable';
 
 interface ScriptDisplayProps {
@@ -7,135 +8,118 @@ interface ScriptDisplayProps {
   storyChapters: StoryChapter[];
   isLoading: boolean;
   error: string | null;
-  onGenerateImage: (sceneIndex: number) => void;
-  onRegeneratePrompt: (sceneIndex: number) => void;
+  lang?: 'vi' | 'en'; // Thêm prop ngôn ngữ (optional để tránh lỗi file khác chưa truyền)
+  onGenerateImage: (index: number) => void;
+  onRegeneratePrompt: (index: number) => void;
   onOpenImage: (src: string, name: string) => void;
 }
 
-const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ script, storyChapters, isLoading, error, onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
-
-  const downloadFile = (filename: string, content: string, mimeType: string) => {
-    const bom = mimeType.includes('csv') ? '\uFEFF' : '';
-    const blob = new Blob([bom + content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDownloadChapters = () => {
-    if (!storyChapters || storyChapters.length === 0) {
-      alert("Không có nội dung chương để tải về.");
-      return;
-    }
-    const content = storyChapters.map(chapter => chapter.text).join('\n\n');
-    downloadFile('kich_ban_chuong.txt', content, 'text/plain;charset=utf-8');
+const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ 
+  script, storyChapters, isLoading, error, lang = 'vi', // Mặc định là 'vi'
+  onGenerateImage, onRegeneratePrompt, onOpenImage 
+}) => {
+  
+  // TỪ ĐIỂN
+  const t = lang === 'vi' ? {
+      title: "Bảng Phân Cảnh Chi Tiết",
+      downloadTxt: "Tải kịch bản chương",
+      downloadPrompt: "Tải Prompt Tạo Ảnh File TXT",
+      downloadExcel: "Tải File Excel",
+      loading: "Đang tạo kịch bản...",
+      empty: "Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.",
+      chapter: "Chương"
+  } : {
+      title: "Detailed Storyboard",
+      downloadTxt: "Download Chapter Script",
+      downloadPrompt: "Download Image Prompts (TXT)",
+      downloadExcel: "Download Excel File",
+      loading: "Generating script...",
+      empty: "Detailed storyboard will appear here.",
+      chapter: "Chapter"
   };
 
   const handleDownloadTxt = () => {
-    if (!script?.scenes || script.scenes.length === 0) {
-      alert("Không có prompt tạo ảnh để tải về.");
-      return;
-    }
-    const content = script.scenes.map(scene => scene.imagePrompt).join('\n\n');
-    downloadFile('prompts_tao_anh.txt', content, 'text/plain;charset=utf-8;');
-  };
-  
-  const handleDownloadExcel = () => {
-    if (!script?.scenes || script.scenes.length === 0) {
-      alert("Không có phân cảnh chi tiết để tải về.");
-      return;
-    };
-    const header = '"STT","Prompt","Trạng Thái"\n';
-    const escapeCsvField = (field: string) => `"${(field || '').replace(/"/g, '""')}"`;
-    const rows = script.scenes.map((scene, index) => {
-      const imagePrompt = scene.imagePrompt || '';
-      const motionPrompt = scene.motionPrompt || '';
-      let motionPromptObject: any;
-      try { motionPromptObject = JSON.parse(motionPrompt); } catch (e) { motionPromptObject = { "info": motionPrompt }; }
-      const combinedPrompt = JSON.stringify({ image_prompt: imagePrompt, motion_prompt: motionPromptObject }, null, 2);
-      const stt = escapeCsvField(String(index + 1));
-      const promptJson = escapeCsvField(combinedPrompt);
-      const trangThai = escapeCsvField('');
-      return [stt, promptJson, trangThai].join(',');
-    }).join('\n');
-    const csvContent = header + rows;
-    downloadFile('prompts_video.csv', csvContent, 'text/csv;charset=utf-8;');
+    if (!script) return;
+    const content = script.scenes.map(s => `Scene ${s.sceneNumber}:\nDesc: ${s.description}\nImage: ${s.imagePrompt}\nMotion: ${s.motionPrompt}\n`).join('\n---\n');
+    downloadFile(content, 'script.txt', 'text/plain');
   };
 
-  const scenes = script?.scenes || [];
+  const handleDownloadPromptTxt = () => {
+    if (!script) return;
+    const content = script.scenes.map(s => s.imagePrompt).join('\n\n');
+    downloadFile(content, 'image_prompts.txt', 'text/plain');
+  };
+
+  const handleDownloadExcel = () => {
+    if (!script) return;
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + "Scene,Description,Image Prompt,Motion Prompt\n"
+        + script.scenes.map(s => `"${s.sceneNumber}","${s.description.replace(/"/g, '""')}","${s.imagePrompt.replace(/"/g, '""')}","${s.motionPrompt.replace(/"/g, '""')}"`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "script.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const downloadFile = (content: string, fileName: string, contentType: string) => {
+    const a = document.createElement("a");
+    const file = new Blob([content], { type: contentType });
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+  };
+
+  if (isLoading && !script) {
+    return (
+      <div className="mt-8 p-12 text-center border border-slate-700 rounded-lg bg-slate-800/50 animate-pulse">
+        <p className="text-cyan-400 text-lg font-medium">{t.loading}</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-8 p-6 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200">
+        <h3 className="font-bold mb-2">Error</h3>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-8 space-y-6">
-       {isLoading && (
-        <div className="text-center">
-            <div className="flex justify-center items-center">
-            <svg className="animate-spin h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="ml-4 text-slate-300 text-lg">AI đang sáng tạo kịch bản, vui lòng chờ trong giây lát...</p>
-            </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-300">
-            <h3 className="font-bold">Đã xảy ra lỗi</h3>
-            <p className="mt-2 text-sm">{error}</p>
-        </div>
-      )}
-
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
-            Bảng Phân Cảnh Chi Tiết
-          </h2>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleDownloadChapters}
-              disabled={storyChapters.length === 0}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-slate-900 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-yellow-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Tải kịch bản chương
+    <div className="mt-8 space-y-8">
+      <div className="flex justify-between items-center border-b border-slate-700 pb-4">
+        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+          {t.title}
+        </h2>
+        <div className="flex space-x-2">
+            <button onClick={handleDownloadTxt} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+               ⬇ {t.downloadTxt}
             </button>
-            <button
-              onClick={handleDownloadTxt}
-              disabled={!script}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-green-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Tải Prompt Tạo Ảnh File TXT
+            <button onClick={handleDownloadPromptTxt} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+               ⬇ {t.downloadPrompt}
             </button>
-            <button
-              onClick={handleDownloadExcel}
-              disabled={!script}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-pink-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Tải File Excel
+            <button onClick={handleDownloadExcel} disabled={!script} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition-colors disabled:opacity-50">
+               ⬇ {t.downloadExcel}
             </button>
-          </div>
         </div>
-        {/* CẬP NHẬT: Truyền totalScenes */}
-        <SceneTable 
-          scenes={scenes} 
-          totalScenes={storyChapters.length} // <-- TRUYỀN TỔNG SỐ CẢNH XUỐNG
-          onGenerateImage={onGenerateImage} 
-          onRegeneratePrompt={onRegeneratePrompt} 
-          onOpenImage={onOpenImage} 
-        />
-         {scenes.length === 0 && !isLoading && (
-            <div className="text-center py-10 border-2 border-dashed border-slate-700 rounded-lg mt-4">
-                <p className="text-slate-500">Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.</p>
-            </div>
-        )}
       </div>
+
+      {!script ? (
+        <div className="text-center py-20 border-2 border-dashed border-slate-700 rounded-lg text-slate-500">
+          {t.empty}
+        </div>
+      ) : (
+        <SceneTable 
+            scenes={script.scenes} 
+            onGenerateImage={onGenerateImage}
+            onRegeneratePrompt={onRegeneratePrompt}
+            onOpenImage={onOpenImage}
+            lang={lang} // Truyền lang xuống Table nếu cần, ở đây Table chưa sửa nhưng ta cứ truyền
+        />
+      )}
     </div>
   );
 };
