@@ -38,7 +38,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       chapter: "Chapter"
   };
 
-  // --- HÀM TẢI FILE TXT (ĐÃ SỬA: BỎ TIÊU ĐỀ CHƯƠNG) ---
+  // --- HÀM TẢI FILE TXT (GIỮ NGUYÊN LOGIC BỎ TIÊU ĐỀ CHƯƠNG) ---
   const handleDownloadTxt = () => {
     // Ưu tiên 1: Nếu đã có kịch bản AI (script), tải kịch bản phân cảnh
     if (script) {
@@ -47,7 +47,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
     } 
     // Ưu tiên 2: Nếu chưa có script nhưng đã chia chương (storyChapters), tải nội dung chương
     else if (storyChapters.length > 0) {
-        // SỬA Ở ĐÂY: Chỉ lấy c.text, không thêm dòng "--- Chương X ---" nữa
+        // Chỉ lấy c.text, không thêm dòng "--- Chương X ---"
         const content = storyChapters.map(c => c.text).join('\n\n');
         downloadFile(content, 'story_chapters.txt', 'text/plain');
     }
@@ -104,20 +104,34 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
           {t.title}
         </h2>
         <div className="flex space-x-2">
-            {/* Nút này sẽ SÁNG nếu có Script HOẶC có StoryChapters */}
+            {/* Nút 1: Tải kịch bản - Đã thay đổi Icon SVG */}
             <button 
                 onClick={handleDownloadTxt} 
                 disabled={!script && storyChapters.length === 0} 
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
+                className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
             >
-               ⬇ {t.downloadTxt}
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+               {t.downloadTxt}
             </button>
 
-            <button onClick={handleDownloadPromptTxt} disabled={!script} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
-               ⬇ {t.downloadPrompt}
+            {/* Nút 2: Tải Prompt - Đã thay đổi Icon SVG */}
+            <button 
+                onClick={handleDownloadPromptTxt} 
+                disabled={!script} 
+                className="inline-flex items-center px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+               {t.downloadPrompt}
             </button>
-            <button onClick={handleDownloadExcel} disabled={!script} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
-               ⬇ {t.downloadExcel}
+
+            {/* Nút 3: Tải Excel - Đã thay đổi Icon SVG */}
+            <button 
+                onClick={handleDownloadExcel} 
+                disabled={!script} 
+                className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+               {t.downloadExcel}
             </button>
         </div>
       </div>
