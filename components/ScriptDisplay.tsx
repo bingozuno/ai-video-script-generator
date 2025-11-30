@@ -38,10 +38,18 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       chapter: "Chapter"
   };
 
+  // --- SỬA LỖI LOGIC TẢI FILE TXT ---
   const handleDownloadTxt = () => {
-    if (!script) return;
-    const content = script.scenes.map(s => `Scene ${s.sceneNumber}:\nDesc: ${s.description}\nImage: ${s.imagePrompt}\nMotion: ${s.motionPrompt}\n`).join('\n---\n');
-    downloadFile(content, 'script.txt', 'text/plain');
+    // Ưu tiên 1: Nếu đã có kịch bản AI (script), tải kịch bản phân cảnh
+    if (script) {
+        const content = script.scenes.map(s => `Scene ${s.sceneNumber}:\nDesc: ${s.description}\nImage: ${s.imagePrompt}\nMotion: ${s.motionPrompt}\n`).join('\n---\n');
+        downloadFile(content, 'script.txt', 'text/plain');
+    } 
+    // Ưu tiên 2: Nếu chưa có script nhưng đã chia chương (storyChapters), tải nội dung chương
+    else if (storyChapters.length > 0) {
+        const content = storyChapters.map((c, i) => `--- ${lang === 'vi' ? 'Chương' : 'Chapter'} ${i + 1} ---\n${c.text}`).join('\n\n');
+        downloadFile(content, 'story_chapters.txt', 'text/plain');
+    }
   };
 
   const handleDownloadPromptTxt = () => {
@@ -95,10 +103,16 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
           {t.title}
         </h2>
         <div className="flex space-x-2">
-            {/* ĐÃ SỬA MÀU NÚT Ở ĐÂY */}
-            <button onClick={handleDownloadTxt} disabled={!script} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
+            {/* SỬA LỖI DISABLED: Nút này sẽ SÁNG nếu có Script HOẶC có StoryChapters */}
+            <button 
+                onClick={handleDownloadTxt} 
+                disabled={!script && storyChapters.length === 0} 
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
+            >
                ⬇ {t.downloadTxt}
             </button>
+
+            {/* Hai nút này vẫn cần Script của AI mới chạy được nên giữ nguyên điều kiện */}
             <button onClick={handleDownloadPromptTxt} disabled={!script} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium">
                ⬇ {t.downloadPrompt}
             </button>
