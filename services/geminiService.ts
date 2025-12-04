@@ -50,6 +50,27 @@ export const generateCharacterDefinition = async (
 };
 
 // =========================================================================
+// === QUY TẮC AN TOÀN (SFW) - MỚI THÊM ===
+// =========================================================================
+const SFW_GUIDELINES = `
+**QUY TẮC AN TOÀN KHI TẠO PROMPT ẢNH (SFW - Safe For Work):**
+Bạn bắt buộc phải tuân thủ 3 nguyên tắc sau đây khi viết "Prompt Tạo Ảnh" (imagePrompt) để tránh vi phạm chính sách nội dung:
+
+1. **Nguyên tắc 1: Không bạo lực trực tiếp (No Gore/Explicit Violence).**
+   - **Tránh dùng:** Blood (máu), Wound (vết thương hở), Kill (giết), Weapon aiming at head (chĩa súng vào đầu), Strangling (bóp cổ), Torture (tra tấn).
+   - **Thay thế bằng:** Injured (bị thương - chung chung), Bandages (băng gạt), Distressed (đau khổ), Intense conflict (xung đột dữ dội), Threatening pose (tư thế đe dọa).
+
+2. **Nguyên tắc 2: Không gợi dục/Khiêu dâm (No NSFW/Sexual Content).**
+   - **Tránh dùng:** Nude/Naked (khỏa thân), Cleavage (khe ngực), Upskirt, Obscene (tục tĩu), Leering (nhìn đểu/dâm), Touching breast/crotch, Seductive (gợi tình quá mức).
+   - **Thay thế bằng:** Alluring (cuốn hút), Elegant (thanh lịch), Fashionable (thời trang), Romantic embrace (ôm lãng mạn), Intense gaze (ánh nhìn mãnh liệt).
+   - **LƯU Ý TRANG PHỤC:** Luôn mô tả trang phục rõ ràng (ví dụ: "wearing a suit", "wearing a dress"). Tuyệt đối không để mô tả thiếu quần áo khiến AI "quên" vẽ.
+
+3. **Nguyên tắc 3: Thay hành động bằng "Bầu không khí" (Atmosphere over Action).**
+   - Thay vì mô tả chi tiết hành động phạm pháp (đưa hối lộ, đánh nhau máu me), hãy mô tả biểu cảm và ánh sáng.
+   - **Y tế:** Tránh mô tả chi tiết rùng rợn (hấp hối, dây dợ chằng chịt). Hãy tả "Bệnh nhân nằm trên giường bệnh, sắc mặt nhợt nhạt, không khí u buồn".
+`;
+
+// =========================================================================
 // === CẬP NHẬT PROMPT HỆ THỐNG ===
 // =========================================================================
 
@@ -83,6 +104,8 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
     * Cụ thể: Sửa lại **Trang phục (Clothing)**, **Hành động (Action)**, và **Biểu cảm (Expression)**, nhưng phải giữ nguyên đặc điểm Cốt lõi (tóc, mắt, mặt, vóc dáng).
 
 * **CẢNH BÁO TỐI CAO:** Lặp lại quy trình "DỊCH, DÁN VÀ SỬA" này cho **MỌI NHÂN VẬT** được định nghĩa có mặt trong cảnh. Phải thêm các từ khóa như "consistent character", "same appearance as described", "no variations in features" để nhấn mạnh. Nếu cảnh có 3 nhân vật, tôi muốn thấy 3 MÔ TẢ ĐẦY ĐỦ ĐÃ ĐƯỢC DỊCH VÀ SỬA. Nếu bạn chỉ viết tên ('Haruka Sato'), bạn đã THẤT BẠI.
+
+${SFW_GUIDELINES}
 
 **QUY TẮC BỔ SUNG:**
 * **Số lượng Phân cảnh:** Dựa trên ý tưởng được cung cấp, hãy tự quyết định số lượng phân cảnh phù hợp.
@@ -130,6 +153,8 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
 
 * **CẢNH BÁO TỐI CAO:** Lặp lại quy trình "DỊCH, DÁN VÀ SỬA" này cho **MỌI NHÂN VẬT** được định nghĩa có mặt trong cảnh. Phải thêm các từ khóa như "consistent character", "same appearance as described", "no variations in features" để nhấn mạnh. Nếu cảnh có 3 nhân vật, tôi muốn thấy 3 MÔ TẢ ĐẦY ĐỦ ĐÃ ĐƯỢC DỊCH VÀ SỬA. Nếu bạn chỉ viết tên ('Haruka Sato'), bạn đã THẤT BẠI.
 
+${SFW_GUIDELINES}
+
 **QUY TẮC BỔ SUNG:**
 * **Quy tắc Phân cảnh (QUAN TRỌNG NHẤT):** Kịch bản của người dùng đã được chia thành nhiều chương (\`--- BẮT ĐẦU CHƯƠNG X ---\`). Nhiệm vụ của bạn là tạo ra **CHÍNH XÁC MỘT PHÂN CẢNH** cho **MỖI CHƯƠNG**. Số lượng phân cảnh trong bảng kết quả cuối cùng phải BẰNG ĐÚNG số lượng chương.
 * **Phong cách:** CHỈ SỬ DỤNG phong cách đã được cung cấp (ví dụ: Photorealistic...).
@@ -147,7 +172,7 @@ Khi bạn viết \`Prompt Tạo Ảnh\` (bắt buộc bằng **Tiếng Anh**), b
 4.  **QUY TẮC MỘT-MỘT:** Mỗi 'Chương' trong đầu vào của người dùng phải tương ứng với CHÍNH XÁC MỘT HÀNG trong bảng này.
 
 **TUÂN THỦ CẤU TRÚC PROMPT ẢNH (BẮT BUỘC):**
-* **Prompt Tạo Ảnh (Whisk AI):** Dựa vào mô tả, tạo một prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên.
+* **Prompt Tạo Ảnh (Whisk AI):** Dựa vào mô tả, tạo một prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên và **QUY TẮC AN TOÀN SFW**.
 * **Prompt Tạo Chuyển động (Veo 3.1):** Prompt riêng biệt bằng **TIẾNG ANH**, phải là một chuỗi JSON hợp lệ.
     * Nếu có nhân vật, BẮT BUỘC phải nhúng mô tả (đã dịch và sửa) vào key \`character_definitions\` trong JSON.
 `;
@@ -614,6 +639,8 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     1.  **TÌM:** Tìm nhân vật trong Nguồn Chân Lý.
     2.  **DỊCH & DÁN:** Dịch nguyên văn 100% mô tả cốt lõi (Tên, Tuổi, Tóc, Mắt, Mặt...) sang Tiếng Anh và DÁN vào đầu prompt ảnh.
     3.  **SỬA:** Dựa vào "Mô tả Cảnh", sửa lại Trang phục, Hành động, Biểu cảm cho phù hợp.
+
+    ${SFW_GUIDELINES}
 
     **QUY TẮC CHO PROMPT CHUYỂN ĐỘNG (VEO 3.1 FORMAT - QUAN TRỌNG):**
     - Nội dung của 'motionPrompt' BẮT BUỘC phải là một chuỗi JSON hợp lệ.
