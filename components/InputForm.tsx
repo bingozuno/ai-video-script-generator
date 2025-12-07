@@ -91,9 +91,10 @@ export const defaultAspectRatios = [
 // --- DANH SÁCH MODEL ---
 // Cập nhật Value theo đúng mã API của Google
 export const AVAILABLE_MODELS = [
-    { label: 'Gemini 3 Pro Preview', value: 'gemini-2.0-flash-exp' }, 
-    { label: 'Gemini 2.5 Pro', value: 'gemini-1.5-pro' },            
-    { label: 'Gemini 2.5 Flash', value: 'gemini-1.5-flash' },       
+    { label: 'Gemini 2.0 Flash (Experimental)', value: 'gemini-2.0-flash-exp' }, 
+    { label: 'Gemini 1.5 Pro (Stable)', value: 'gemini-1.5-pro-001' },       
+    { label: 'Gemini 1.5 Flash (Stable)', value: 'gemini-1.5-flash-001' },   
+    { label: 'Gemini 1.5 Pro (Latest)', value: 'gemini-1.5-pro-latest' },   
 ];
 
 const InputForm: React.FC<InputFormProps> = (props) => {
