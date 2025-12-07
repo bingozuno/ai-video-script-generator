@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import type { Script, CharacterReference, StyleInfo, ProjectState, StoryChapter } from './types';
 import { generateScript, generateImagesFromPrompt, generateCharacterDefinition, regenerateScenePrompts } from './services/geminiService';
 import Header from './components/Header';
-import InputForm, { defaultStyles, defaultAspectRatios } from './components/InputForm';
+import InputForm, { defaultStyles, defaultAspectRatios, AVAILABLE_MODELS } from './components/InputForm';
 import ScriptDisplay from './components/ScriptDisplay';
 import ImageModal from './components/ImageModal';
 
-// --- CÁC HÀM CHIA VĂN BẢN (Giữ nguyên không đổi) ---
+// --- CÁC HÀM CHIA VĂN BẢN (Giữ nguyên logic chia văn bản) ---
 const splitTextIntoChaptersLocally = (text: string, rangeStr: string): string[] => {
   const targetChars = parseInt(rangeStr, 10);
   if (isNaN(targetChars) || targetChars <= 0) return text ? [text.trim()] : [];
@@ -119,8 +119,8 @@ const splitTextIntoNChapters = (text: string, numChapters: number): string[] => 
 
 interface ScriptGeneratorProps {
   apiKey: string;
-  lang: 'vi' | 'en'; // Nhận ngôn ngữ từ App
-  onAllFinished?: () => void; // Callback để báo cho App biết đã xong hết (để hiện QR)
+  lang: 'vi' | 'en'; 
+  onAllFinished?: () => void; 
 }
 
 const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFinished }) => {
@@ -153,11 +153,14 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
   const [storyChapters, setStoryChapters] = useState<StoryChapter[]>([]);
   const [characterSource, setCharacterSource] = useState<'definition' | 'references'>('definition');
   const [limitCharacterCount, setLimitCharacterCount] = useState<boolean>(false);
+  
+  // --- STATE MODEL MỚI (Lấy giá trị đầu tiên trong danh sách làm mặc định) ---
+  const [selectedModel, setSelectedModel] = useState<string>(AVAILABLE_MODELS[0].value);
 
   // --- STATE QUẢN LÝ TIẾN ĐỘ & TỰ ĐỘNG CHẠY ---
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [isAutoRunning, setIsAutoRunning] = useState<boolean>(false); 
-  const BATCH_SIZE = 5; // Mặc định tạo 5 chương mỗi lần
+  const BATCH_SIZE = 5; 
   
   // --- LOAD DỮ LIỆU ĐÃ LƯU (Styles, Ratios) ---
    useEffect(() => {
@@ -218,7 +221,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
     if (!scriptText) { alert("Vui lòng nhập kịch bản."); return; }
     setIsGeneratingDef(true); setError(null);
     try {
-      const definition = await generateCharacterDefinition(scriptText, apiKey);
+      // Truyền selectedModel vào API
+      const definition = await generateCharacterDefinition(scriptText, apiKey, selectedModel);
       setCharacterDefinition(definition);
     } catch (err) { setError(err instanceof Error ? err.message : "Lỗi không xác định."); } 
     finally { setIsGeneratingDef(false); }
@@ -232,7 +236,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
     if (completedCount >= totalChapters) {
         if (isAutoRunning) {
             setIsAutoRunning(false);
-            // QUAN TRỌNG: Gọi callback để App biết đường hiện QR Code
             if (onAllFinished) onAllFinished();
         } else {
             alert(lang === 'vi' ? "Đã hoàn thành tạo prompt cho tất cả các chương!" : "All chapters completed!");
@@ -275,7 +278,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
           dialogueLanguage,
           apiKey,
           characterSource,
-          limitCharacterCount 
+          limitCharacterCount,
+          selectedModel // <--- Truyền model xuống Service
       );
 
       // Gộp kết quả mới vào bảng cũ
@@ -309,17 +313,14 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     
-    // Điều kiện: Đang bật Auto, Không đang load, Chưa làm xong hết, và Đã làm được ít nhất 1 đợt
     if (isAutoRunning && !isLoading && completedCount < storyChapters.length && completedCount > 0) {
         console.log(`Đợi 3 giây trước khi tạo batch tiếp theo...`);
         timeout = setTimeout(() => {
             handleGenerateScript();
-        }, 3000); // CHỜ 3 GIÂY
+        }, 3000); 
     } 
-    // Điều kiện dừng: Khi đã làm xong hết các chương
     else if (completedCount >= storyChapters.length && isAutoRunning) {
         setIsAutoRunning(false);
-        // QUAN TRỌNG: Gọi callback khi xong hết tự động
         if (onAllFinished) onAllFinished();
     }
 
@@ -348,7 +349,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
     setError(null);
     try {
         const scene = script.scenes[sceneIndex];
-        const generatedImagesBase64 = await generateImagesFromPrompt(scene.imagePrompt, aspectRatio, apiKey);
+        // Truyền model vào (dù mặc định là tạo ảnh nhưng truyền để thống nhất API)
+        const generatedImagesBase64 = await generateImagesFromPrompt(scene.imagePrompt, aspectRatio, apiKey, selectedModel);
         const generatedImagesDataUrls = generatedImagesBase64.map(b64 => `data:image/png;base64,${b64}`);
         setScript(prev => {
             if (!prev) return null;
@@ -372,7 +374,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
   const handleRegeneratePrompt = async (sceneIndex: number) => {
     if (!script || !script.scenes[sceneIndex]) return;
     
-    // Bật trạng thái loading
     setScript(prev => {
         if (!prev) return null;
         const newScenes = [...prev.scenes];
@@ -394,16 +395,16 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
         
         const combinedStyle = selectedStylePrompts.join(', ');
         
-        // Gọi hàm mới tạo lại cả 2 prompt
+        // Gọi hàm regenerate với model được chọn
         const newPrompts = await regenerateScenePrompts(
             scene.description,
             finalCharacterDefinition,
             combinedStyle,
             aspectRatio,
-            apiKey
+            apiKey,
+            selectedModel // <--- Truyền model xuống Service
         );
 
-        // Cập nhật cả imagePrompt và motionPrompt
         setScript(prev => {
             if (!prev) return null;
             const newScenes = [...prev.scenes];
@@ -433,7 +434,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
     const projectState: ProjectState = {
       mode, ideaInput, longStoryInput, storyChapters, selectedStylePrompts, characterReferences, 
       characterDefinition, aspectRatio, generateImage, generateMotion, includeMusic, dialogueLanguage, script,
-      limitCharacterCount 
+      limitCharacterCount, 
+      selectedModel // <--- Lưu model vào file JSON
     };
     const dataStr = JSON.stringify(projectState, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -466,8 +468,14 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
         setGenerateMotion(projectState.generateMotion !== false);
         setIncludeMusic(projectState.includeMusic || false);
         setDialogueLanguage(projectState.dialogueLanguage || 'Vietnamese');
-        
         setLimitCharacterCount(projectState.limitCharacterCount || false);
+
+        // Nạp model từ file nếu có, nếu không thì lấy mặc định
+        if (projectState.selectedModel) {
+            setSelectedModel(projectState.selectedModel);
+        } else {
+            setSelectedModel(AVAILABLE_MODELS[0].value);
+        }
 
         setScript(projectState.script || null);
         
@@ -484,9 +492,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
 
   return (
     <>
-      {/* HEADER được truyền ngôn ngữ */}
       <Header lang={lang} /> 
-      
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-slate-800/50 p-6 rounded-lg shadow-lg border border-slate-700">
           <InputForm
@@ -500,6 +506,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
             dialogueLanguage={dialogueLanguage} isLoading={isLoading} isSplitting={false} isGeneratingDef={isGeneratingDef}
             styles={styles} aspectRatios={aspectRatios} storyChapters={storyChapters} splitMode={splitMode} numberOfChapters={numberOfChapters}
             limitCharacterCount={limitCharacterCount} setLimitCharacterCount={setLimitCharacterCount}
+            
+            selectedModel={selectedModel} setSelectedModel={setSelectedModel} // <--- Truyền Props xuống InputForm
+
             setMode={setMode} setIdeaInput={setIdeaInput} setLongStoryInput={setLongStoryInput} setChapterSplitRange={setChapterSplitRange}
             setSelectedStylePrompts={setSelectedStylePrompts} setCharacterReferences={setCharacterReferences} setCharacterDefinition={setCharacterDefinition}
             setAspectRatio={setAspectRatio} setGenerateImage={setGenerateImage} setGenerateMotion={setGenerateMotion} setIncludeMusic={setIncludeMusic}
@@ -521,7 +530,6 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
             onOpenImage={handleOpenImageModal}
         />
 
-        {/* Nút reset tiện ích (nếu cần hiển thị ở UI) */}
         {completedCount > 0 && completedCount < storyChapters.length && !isLoading && !isAutoRunning && (
             <div className="text-center mt-4">
                 <p className="text-slate-400 mb-2">

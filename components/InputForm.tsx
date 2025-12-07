@@ -4,7 +4,7 @@ import { analyzeCharacterImage } from '../services/geminiService';
 
 interface InputFormProps {
   apiKey: string;
-  lang: 'vi' | 'en'; // Thêm prop ngôn ngữ
+  lang: 'vi' | 'en';
   mode: 'idea' | 'script';
   ideaInput: string;
   longStoryInput: string;
@@ -27,6 +27,9 @@ interface InputFormProps {
   splitMode: 'range' | 'number';
   numberOfChapters: string;
   
+  selectedModel: string; 
+  setSelectedModel: (model: string) => void;
+
   characterSource: 'definition' | 'references';
   setCharacterSource: (source: 'definition' | 'references') => void;
 
@@ -85,13 +88,22 @@ export const defaultAspectRatios = [
     { name: 'Cổ điển', value: '4:3' },
 ];
 
+// --- DANH SÁCH MODEL ---
+// Cập nhật Value theo đúng mã API của Google
+export const AVAILABLE_MODELS = [
+    { label: 'Gemini 3 Pro Preview', value: 'gemini-2.0-flash-exp' }, 
+    { label: 'Gemini 2.5 Pro', value: 'gemini-1.5-pro' },            
+    { label: 'Gemini 2.5 Flash', value: 'gemini-1.5-flash' },       
+];
+
 const InputForm: React.FC<InputFormProps> = (props) => {
   const {
-      apiKey, lang, // Nhận lang
+      apiKey, lang,
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
       generateImage, generateMotion, includeMusic, dialogueLanguage, limitCharacterCount,
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
       splitMode, numberOfChapters,
+      selectedModel, setSelectedModel, 
       characterSource, 
       setMode, setIdeaInput, setLongStoryInput, setChapterSplitRange, setSelectedStylePrompts, setCharacterReferences, setCharacterDefinition,
       setAspectRatio, setGenerateImage, setGenerateMotion, setIncludeMusic,
@@ -122,6 +134,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       manageTitle: "Quản lý Dự án & Tùy chọn Kịch bản",
       export: "Xuất Dự án (.json)",
       import: "Nạp Dự án từ File",
+      selectModel: "Chọn Model AI:", 
       inputStory: "Nhập câu chuyện",
       inputPlaceholder: "Dán toàn bộ câu chuyện của bạn vào đây...",
       splitRange: "Mỗi chương:",
@@ -159,6 +172,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       manageTitle: "Project Management",
       export: "Export Project (.json)",
       import: "Import Project",
+      selectModel: "Select AI Model:", 
       inputStory: "Input Story",
       inputPlaceholder: "Paste your full story here...",
       splitRange: "Per chapter:",
@@ -189,7 +203,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       dialogueLang: "Dialogue Language"
   };
 
-  // ... (Giữ nguyên các hàm handler: handleStyleClick, handleSaveStyle, v.v...)
   const handleStyleClick = (prompt: string) => {
     const newSelection = [...selectedStylePrompts];
     const isSelected = newSelection.includes(prompt);
@@ -234,7 +247,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
     if (!character || !character.imageBase64) { alert(lang==='vi'?"Chưa có ảnh.":"No image."); return; }
     handleCharacterUpdate(id, 'isAnalyzing', true);
     try {
-      const description = await analyzeCharacterImage(character.imageBase64, character.fileType!, apiKey);
+      const description = await analyzeCharacterImage(character.imageBase64, character.fileType!, apiKey, selectedModel);
       handleCharacterUpdate(id, 'description', description);
     } catch (error) { alert(error instanceof Error ? error.message : "Lỗi"); } 
     finally { handleCharacterUpdate(id, 'isAnalyzing', false); }
@@ -311,10 +324,10 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
       </div>
        
-      {/* 2. QUẢN LÝ DỰ ÁN */}
+      {/* 2. QUẢN LÝ DỰ ÁN & CHỌN MODEL */}
       <div className="mt-6">
             <h3 className="text-sm font-medium text-slate-300 mb-2">{t.manageTitle}</h3>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center space-x-3">
                     <button type="button" onClick={onExport} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -325,6 +338,21 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                         {t.import}
                     </button>
+                </div>
+
+                {/* KHU VỰC CHỌN MODEL */}
+                <div className="flex items-center space-x-2 bg-slate-800 border border-slate-700 p-1.5 rounded-lg">
+                    <label htmlFor="model-select" className="text-sm font-bold text-yellow-500 whitespace-nowrap px-2">{t.selectModel}</label>
+                    <select
+                        id="model-select"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="bg-slate-700 border border-slate-600 text-slate-200 text-sm rounded-md focus:ring-cyan-500 focus:border-cyan-500 block p-2 min-w-[180px]"
+                    >
+                        {AVAILABLE_MODELS.map((m) => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
         </div>

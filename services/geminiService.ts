@@ -24,14 +24,15 @@ Yêu cầu:
 
 export const generateCharacterDefinition = async (
     scriptText: string, 
-    apiKey: string
+    apiKey: string,
+    modelName: string // <--- Tham số Model mới
 ): Promise<string> => {
     try {
         if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: modelName, // <--- Sử dụng Model được chọn
             contents: [{ parts: [{ text: scriptText }] }],
             config: {
                 systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT,
@@ -75,7 +76,7 @@ Bạn bắt buộc phải tuân thủ 3 nguyên tắc sau đây khi viết "Prom
 // =========================================================================
 
 const SYSTEM_PROMPT_FROM_IDEA = `
-Bạn là một "Chuyên gia Viết Kịch bản và Prompt cho AI Video" sử dụng mô hình Gemini 2.5 Pro.
+Bạn là một "Chuyên gia Viết Kịch bản và Prompt cho AI Video".
 Nhiệm vụ của bạn là nhận ý tưởng của người dùng, phân tích và chia thành các phân cảnh, sau đó tạo ra các prompt tối ưu cho từng phân cảnh.
 
 **TỐI HẬU THƯ VỀ NHẤT QUÁN NHÂN VẬT (TUÂN THỦ TUYỆT ĐỐI - PHIÊN BẢN 10.0)**
@@ -123,7 +124,7 @@ ${SFW_GUIDELINES}
 `;
 
 const SYSTEM_PROMPT_FROM_SCRIPT = `
-Bạn là một "Chuyên gia Tạo Prompt cho AI Video" sử dụng mô hình Gemini 2.5 Pro.
+Bạn là một "Chuyên gia Tạo Prompt cho AI Video".
 Nhiệm vụ của bạn là nhận một kịch bản đã được chia sẵn thành các phân cảnh từ người dùng. Dựa trên mô tả của từng cảnh, bạn sẽ tạo ra các prompt tối ưu để tạo ảnh và tạo chuyển động.
 
 **TỐI HẬU THƯ VỀ NHẤT QUÁN NHÂN VẬT (TUÂN THỦ TUYỆT ĐỐI - PHIÊN BẢN 10.0)**
@@ -311,7 +312,8 @@ const parseGeminiResponse = (responseText: string): Script => {
 export const analyzeCharacterImage = async (
     base64Image: string, 
     mimeType: string, 
-    apiKey: string
+    apiKey: string,
+    modelName: string // <--- Tham số Model mới
 ): Promise<string> => {
     try {
         if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -326,7 +328,7 @@ export const analyzeCharacterImage = async (
         };
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
+            model: modelName, // <--- Sử dụng Model được chọn
             contents: { parts: [textPart, imagePart] },
         });
 
@@ -345,7 +347,8 @@ export const analyzeCharacterImage = async (
 export const generateImagesFromPrompt = async (
     prompt: string, 
     aspectRatio: string, 
-    apiKey: string
+    apiKey: string,
+    modelName: string // <--- Thêm param modelName để khớp Interface, nhưng bên trong vẫn giữ model ảnh
 ): Promise<string[]> => {
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -372,8 +375,10 @@ export const generateImagesFromPrompt = async (
     const enhancedPrompt = `${aspectRatioDescription} ${cleanPrompt}`;
 
     const generateSingleImage = async () => {
+      // LƯU Ý: Model tạo ảnh chuyên dụng vẫn được giữ nguyên
+      // Vì các model text (Flash/Pro) không hỗ trợ tạo ảnh trực tiếp qua endpoint này
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-2.5-flash-image', // Giữ nguyên model ảnh chuyên dụng
         contents: {
           parts: [{ text: enhancedPrompt }],
         },
@@ -407,15 +412,16 @@ export const generateScript = async (
     mode: 'idea' | 'script', 
     stylePrompt: string, 
     characterReferences: CharacterReference[], 
-    characterDefinition: string, // <-- Đây là ô to
+    characterDefinition: string, 
     aspectRatio: string,
     generateImage: boolean,
     generateMotion: boolean,
     includeMusic: boolean,
     dialogueLanguage: string,
     apiKey: string,
-    characterSource: 'definition' | 'references', // <-- THAM SỐ MỚI TỪ CHECKBOX
-    limitCharacterCount: boolean = false // <--- THAM SỐ MỚI CẬP NHẬT: GIỚI HẠN NHÂN VẬT
+    characterSource: 'definition' | 'references', 
+    limitCharacterCount: boolean = false,
+    modelName: string // <--- Tham số Model mới
 ): Promise<Script> => {
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -508,7 +514,7 @@ export const generateScript = async (
     });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: modelName, // <--- Sử dụng Model được chọn
       contents: { parts: contentParts },
     });
 
@@ -544,7 +550,8 @@ export const generateStorytellingPrompts = async (
     stylePrompt: string,
     aspectRatio: string,
     characterDefinition: string,
-    apiKey: string
+    apiKey: string,
+    modelName: string = "gemini-1.5-pro" // <--- Thêm param default để tránh lỗi nếu code cũ gọi
 ): Promise<StorytellingScene[]> => {
     let userPrompt = `
     **Dữ liệu của người dùng:**
@@ -572,7 +579,7 @@ export const generateStorytellingPrompts = async (
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: modelName, // <--- Sử dụng Model được chọn
             contents: [{ parts: [{ text: userPrompt }] }],
             config: {
                 systemInstruction: STORYTELLING_SYSTEM_PROMPT,
@@ -618,13 +625,14 @@ export const generateStorytellingPrompts = async (
 // =========================================================================
 // === HÀM MỚI: REGENERATE CẢ ẢNH VÀ CHUYỂN ĐỘNG ===
 // =========================================================================
-export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý nghĩa
+export const regenerateScenePrompts = async ( 
   sceneDescription: string,
   characterData: string, // Nguồn chân lý
   stylePrompt: string,
   aspectRatio: string,
-  apiKey: string
-): Promise<{ imagePrompt: string; motionPrompt: string }> => { // Trả về Object
+  apiKey: string,
+  modelName: string // <--- Tham số Model mới
+): Promise<{ imagePrompt: string; motionPrompt: string }> => { 
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key.");
     const ai = new GoogleGenAI({ apiKey });
@@ -668,7 +676,7 @@ export const regenerateScenePrompts = async ( // Đổi tên hàm cho đúng ý 
     `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: modelName, // <--- Sử dụng Model được chọn
       contents: [{ parts: [{ text: systemPrompt }] }],
       config: { responseMimeType: "application/json" } // Ép kiểu JSON để AI trả về đúng
     });

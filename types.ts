@@ -42,6 +42,7 @@ export interface ProjectState {
   includeMusic: boolean;
   dialogueLanguage: string;
   limitCharacterCount: boolean;
+  selectedModel?: string; // <--- Đã thêm: Lưu model đã chọn
   script: Script | null;
 }
 
@@ -90,4 +91,42 @@ export interface Translation {
   coffeeDesc1: string;
   coffeeDesc2: string;
   close: string;
+  // Model & Manage
+  manageTitle: string;
+  export: string;
+  import: string;
+  selectModel: string;
+  // Input Form
+  inputStory: string;
+  splitRange: string;
+  chars: string;
+  splitNum: string;
+  chapters: string;
+  splitBtn: string;
+  scenesDone: string;
+  noChapters: string;
+  noChaptersHint: string;
+  charSource1: string;
+  charSource2: string;
+  charDefHint: string;
+  autoGen: string;
+  analyzing: string;
+  charRefHint: string;
+  dropImage: string;
+  uploadImage: string;
+  analyzeAI: string;
+  addChar: string;
+  customDetail: string;
+  imgPrompt: string;
+  limitChar: string;
+  motionPrompt: string;
+  createBtn: string;
+  createBatch: string;
+  music: string;
+  dialogueLang: string;
+  styleTitle: string;
+  styleAdd: string;
+  styleClose: string;
+  ratioTitle: string;
+  ratioAdd: string;
 }
