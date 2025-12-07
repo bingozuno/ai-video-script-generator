@@ -91,19 +91,21 @@ export const defaultAspectRatios = [
 // --- DANH SÁCH MODEL ---
 // Cập nhật Value theo đúng mã API của Google
 export const AVAILABLE_MODELS = [
-    // 1. Gemini 2.0 Flash (Bản Chính Thức): Đây là model chuẩn thay thế cho 1.5 Flash.
-    // Đã ra mắt ổn định từ đầu năm 2025, có Free Tier.
+    // 1. Gemini 2.0 Flash (Bản Chính Thức - Khuyên dùng): 
+    // Đây là bản ổn định thay thế hoàn toàn cho 1.5 Flash, có Free Tier.
     { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
 
-    // 2. Generic Alias (Tự động): Google khuyến nghị dùng cái này.
-    // Nó sẽ tự động trỏ vào model Flash mới nhất còn sống (tránh lỗi 404 khi model cũ chết).
-    { label: 'Gemini Flash (Auto-Update)', value: 'gemini-flash' },
+    // 2. Gemini 2.5 Flash (Bản Mới nhất):
+    // Dòng model mới nhất vừa ra mắt, tốc độ cao và thông minh hơn.
+    { label: 'Gemini 2.5 Flash (New)', value: 'gemini-2.5-flash' },
 
-    // 3. Gemini 2.0 Pro (Nếu tài khoản có hỗ trợ): Mạnh hơn Flash.
-    { label: 'Gemini 2.0 Pro (Stable)', value: 'gemini-2.0-pro' },
+    // 3. Gemini 2.5 Pro (Bản Mạnh nhất):
+    // Dùng cho các tác vụ phức tạp, thay thế cho 1.5 Pro.
+    { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
     
-    // 4. Gemini 2.5 Flash (Bản Preview mới): Dùng thử công nghệ mới nhất cuối 2025
-    { label: 'Gemini 2.5 Flash (Preview)', value: 'gemini-2.5-flash-preview' },
+    // 4. Generic Alias (Tự động cập nhật):
+    // Trỏ về bản Flash ổn định mới nhất tại mọi thời điểm (An toàn nhất).
+    { label: 'Gemini Flash (Auto)', value: 'gemini-flash' },
 ];
 
 const InputForm: React.FC<InputFormProps> = (props) => {
