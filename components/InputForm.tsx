@@ -103,9 +103,13 @@ export const AVAILABLE_MODELS = [
     // Dùng cho các tác vụ phức tạp, thay thế cho 1.5 Pro.
     { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
     
-    // 4. Generic Alias (Tự động cập nhật):
+    // 4. Gemini Flash-Lite (Tự động cập nhật):
     // Trỏ về bản Flash ổn định mới nhất tại mọi thời điểm (An toàn nhất).
-    { label: 'Gemini Flash (Auto)', value: 'gemini-flash' },
+    { label: 'Gemini 2.5 Flash-Lite', value: '	gemini-2.5-flash-lite' },
+
+    // 5. Generic 3 (Tự động cập nhật):
+    // Trỏ về bản 3 ổn định mới nhất tại mọi thời điểm (thông minh hơn).
+    { label: 'Gemini 3 Pro Preview', value: 'gemini-3-pro-preview' },
 ];
 
 const InputForm: React.FC<InputFormProps> = (props) => {
