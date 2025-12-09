@@ -91,24 +91,24 @@ export const defaultAspectRatios = [
 // --- DANH SÁCH MODEL ---
 // Cập nhật Value theo đúng mã API của Google
 export const AVAILABLE_MODELS = [
-    // 1. Gemini 2.0 Flash (Bản Chính Thức - Khuyên dùng): 
-    // Đây là bản ổn định thay thế hoàn toàn cho 1.5 Flash, có Free Tier.
-    { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
-
-    // 2. Gemini 2.5 Flash (Bản Mới nhất):
+    // 1. Gemini 2.5 Flash (Bản Mới nhất):
     // Dòng model mới nhất vừa ra mắt, tốc độ cao và thông minh hơn.
     { label: 'Gemini 2.5 Flash (New)', value: 'gemini-2.5-flash' },
 
-    // 3. Gemini 2.5 Pro (Bản Mạnh nhất):
-    // Dùng cho các tác vụ phức tạp, thay thế cho 1.5 Pro.
-    { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
-    
-    // 4. Gemini Flash-Lite (Tự động cập nhật):
+    // 2. Gemini Flash-Lite (Tự động cập nhật):
     // Trỏ về bản Flash ổn định mới nhất tại mọi thời điểm (An toàn nhất).
     { label: 'Gemini 2.5 Flash-Lite', value: '	gemini-2.5-flash-lite' },
 
-    // 5. Generic 3 (Tự động cập nhật):
-    // Trỏ về bản 3 ổn định mới nhất tại mọi thời điểm (thông minh hơn).
+    { label: 'Gemini 2.0 Pro Preview tts', value: 'gemini-2.5-pro-preview-tts' },
+
+    { label: 'Gemini 2.0 Flash-Lite-Previe', value: 'gemini-2.0-flash-lite-preview' },
+
+    { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
+
+    { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
+
+    { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
+
     { label: 'Gemini 3 Pro Preview', value: 'gemini-3-pro-preview' },
 ];
 
