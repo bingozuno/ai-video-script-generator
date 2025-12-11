@@ -38,16 +38,16 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       chapter: "Chapter"
   };
 
-  // --- HÀM TẢI FILE TXT (GIỮ NGUYÊN LOGIC BỎ TIÊU ĐỀ CHƯƠNG) ---
+  // --- HÀM TẢI FILE TXT ---
   const handleDownloadTxt = () => {
     // Ưu tiên 1: Nếu đã có kịch bản AI (script), tải kịch bản phân cảnh
     if (script) {
+        // AI đã thêm tên nhân vật vào 'description', nên ở đây file TXT cũng sẽ có tên nhân vật
         const content = script.scenes.map(s => `Scene ${s.sceneNumber}:\nDesc: ${s.description}\nImage: ${s.imagePrompt}\nMotion: ${s.motionPrompt}\n`).join('\n---\n');
         downloadFile(content, 'script.txt', 'text/plain');
     } 
     // Ưu tiên 2: Nếu chưa có script nhưng đã chia chương (storyChapters), tải nội dung chương
     else if (storyChapters.length > 0) {
-        // Chỉ lấy c.text, không thêm dòng "--- Chương X ---"
         const content = storyChapters.map(c => c.text).join('\n\n');
         downloadFile(content, 'story_chapters.txt', 'text/plain');
     }
@@ -61,6 +61,8 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
 
   const handleDownloadExcel = () => {
     if (!script) return;
+    // Xuất file Excel (CSV)
+    // Cột Description bây giờ sẽ chứa cả phần "(Nhân vật: ...)" do AI tạo ra
     const csvContent = "data:text/csv;charset=utf-8," 
         + "Scene,Description,Image Prompt,Motion Prompt\n"
         + script.scenes.map(s => `"${s.sceneNumber}","${s.description.replace(/"/g, '""')}","${s.imagePrompt.replace(/"/g, '""')}","${s.motionPrompt.replace(/"/g, '""')}"`).join("\n");
@@ -104,7 +106,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
           {t.title}
         </h2>
         <div className="flex space-x-2">
-            {/* Nút 1: Tải kịch bản - Đã thay đổi Icon SVG */}
+            {/* Nút 1: Tải kịch bản */}
             <button 
                 onClick={handleDownloadTxt} 
                 disabled={!script && storyChapters.length === 0} 
@@ -114,7 +116,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
                {t.downloadTxt}
             </button>
 
-            {/* Nút 2: Tải Prompt - Đã thay đổi Icon SVG */}
+            {/* Nút 2: Tải Prompt */}
             <button 
                 onClick={handleDownloadPromptTxt} 
                 disabled={!script} 
@@ -124,7 +126,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
                {t.downloadPrompt}
             </button>
 
-            {/* Nút 3: Tải Excel - Đã thay đổi Icon SVG */}
+            {/* Nút 3: Tải Excel */}
             <button 
                 onClick={handleDownloadExcel} 
                 disabled={!script} 

@@ -25,14 +25,14 @@ Yêu cầu:
 export const generateCharacterDefinition = async (
     scriptText: string, 
     apiKey: string,
-    modelName: string // <--- Tham số Model mới
+    modelName: string 
 ): Promise<string> => {
     try {
         if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: modelName, // <--- Sử dụng Model được chọn
+            model: modelName, 
             contents: [{ parts: [{ text: scriptText }] }],
             config: {
                 systemInstruction: CHARACTER_DEFINITION_SYSTEM_PROMPT,
@@ -118,6 +118,7 @@ ${SFW_GUIDELINES}
 
 **Tiêu chuẩn đầu ra BẮT BUỘC:**
 1.  **Bảng Phân cảnh:** Trình bày dưới dạng bảng Markdown. BẮT ĐẦU VỚI DÒNG "### Bảng Phân cảnh". Bảng phải có 5 cột với tiêu đề chính xác như sau: "STT/Phân cảnh", "Thời gian (8 giây)", "Mô tả Kịch bản Chi tiết", "Prompt Tạo Ảnh (Whisk AI)", "Prompt Tạo Chuyển động (Veo 3.1)".
+    * **Mô tả Kịch bản Chi tiết:** Mô tả diễn biến cảnh. **ĐẶC BIỆT LƯU Ý:** Cuối phần mô tả, BẮT BUỘC liệt kê tên các nhân vật có mặt trong cảnh đó trong ngoặc đơn, lấy từ prompt tạo ảnh. Ví dụ: "...bầu trời tối sầm lại. (Nhân vật: Keisha, Dante)".
     * **Prompt Tạo Ảnh (Whisk AI):** Prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên.
     * **Prompt Tạo Chuyển động (Veo 3.1):** Prompt riêng biệt bằng **TIẾNG ANH**, phải là một chuỗi JSON hợp lệ.
         * Nếu có nhân vật, BẮT BUỘC phải nhúng mô tả (đã dịch và sửa) vào key \`character_definitions\` trong JSON.
@@ -171,6 +172,7 @@ ${SFW_GUIDELINES}
 3.  **ĐỊNH DẠNG BẢNG:** NGAY SAU dòng đó, hãy cung cấp một bảng Markdown 5 cột DUY NHẤT. Tiêu đề cột BẮT BUỘC phải chính xác như sau:
     | STT/Phân cảnh | Thời gian (8 giây) | Mô tả Kịch bản Chi tiết | Prompt Tạo Ảnh (Whisk AI) | Prompt Tạo Chuyển động (Veo 3.1) |
 4.  **QUY TẮC MỘT-MỘT:** Mỗi 'Chương' trong đầu vào của người dùng phải tương ứng với CHÍNH XÁC MỘT HÀNG trong bảng này.
+5.  **CỘT MÔ TẢ KỊCH BẢN:** Trong cột "Mô tả Kịch bản Chi tiết", sau khi mô tả diễn biến, bạn BẮT BUỘC phải thêm danh sách tên các nhân vật có mặt trong cảnh vào cuối, đặt trong ngoặc đơn. Ví dụ: "...cô ấy mỉm cười. (Nhân vật: Keisha, Dante)".
 
 **TUÂN THỦ CẤU TRÚC PROMPT ẢNH (BẮT BUỘC):**
 * **Prompt Tạo Ảnh (Whisk AI):** Dựa vào mô tả, tạo một prompt chi tiết bằng **TIẾNG ANH**. BẮT BUỘC tuân thủ **QUY TRÌNH BẮT BUỘC KHI VIẾT PROMPT ẢNH** ở trên và **QUY TẮC AN TOÀN SFW**.
@@ -313,7 +315,7 @@ export const analyzeCharacterImage = async (
     base64Image: string, 
     mimeType: string, 
     apiKey: string,
-    modelName: string // <--- Tham số Model mới
+    modelName: string 
 ): Promise<string> => {
     try {
         if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -328,7 +330,7 @@ export const analyzeCharacterImage = async (
         };
 
         const response = await ai.models.generateContent({
-            model: modelName, // <--- Sử dụng Model được chọn
+            model: modelName, 
             contents: { parts: [textPart, imagePart] },
         });
 
@@ -348,7 +350,7 @@ export const generateImagesFromPrompt = async (
     prompt: string, 
     aspectRatio: string, 
     apiKey: string,
-    modelName: string // <--- Thêm param modelName để khớp Interface, nhưng bên trong vẫn giữ model ảnh
+    modelName: string 
 ): Promise<string[]> => {
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");
@@ -421,7 +423,7 @@ export const generateScript = async (
     apiKey: string,
     characterSource: 'definition' | 'references', 
     limitCharacterCount: boolean = false,
-    modelName: string // <--- Tham số Model mới
+    modelName: string 
 ): Promise<Script> => {
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key của bạn ở đầu trang.");

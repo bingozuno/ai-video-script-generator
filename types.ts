@@ -42,7 +42,7 @@ export interface ProjectState {
   includeMusic: boolean;
   dialogueLanguage: string;
   limitCharacterCount: boolean;
-  selectedModel?: string; // <--- Đã thêm: Lưu model đã chọn
+  selectedModel?: string; 
   script: Script | null;
 }
 
