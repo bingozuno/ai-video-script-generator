@@ -423,6 +423,7 @@ export const generateScript = async (
     apiKey: string,
     characterSource: 'definition' | 'references', 
     limitCharacterCount: boolean = false,
+    limitPromptLength: boolean = false, // <--- Đã thêm tham số này
     modelName: string 
 ): Promise<Script> => {
   try {
@@ -441,6 +442,10 @@ export const generateScript = async (
     // --- LOGIC XỬ LÝ GIỚI HẠN 3 NHÂN VẬT ---
     if (limitCharacterCount) {
         instructions += "\n\n**YÊU CẦU ĐẶC BIỆT:** Trong trường 'imagePrompt', bạn CHỈ ĐƯỢC PHÉP mô tả TỐI ĐA 3 NHÂN VẬT CHÍNH quan trọng nhất xuất hiện trong cảnh đó. Ngay cả khi cốt truyện gốc có nhiều nhân vật hơn, hãy lọc và chỉ giữ lại mô tả của 3 người quan trọng nhất để tránh làm rối AI tạo ảnh. Bỏ qua mô tả ngoại hình của các nhân vật quần chúng hoặc phụ.";
+    }
+    // --- LOGIC XỬ LÝ GIỚI HẠN 1600 KÝ TỰ (MỚI) ---
+    if (limitPromptLength) {
+        instructions += "\n\n**YÊU CẦU ĐỘ DÀI PROMPT (DREAMINA):** Prompt tạo ảnh (imagePrompt) BẮT BUỘC phải DƯỚI 1600 ký tự. Bạn hãy tối ưu hóa câu từ, loại bỏ các từ dư thừa (stopwords), tập trung vào các từ khóa (keywords) quan trọng nhất về nhân vật, bối cảnh và ánh sáng. TUY NHIÊN, vẫn phải đảm bảo đầy đủ các chi tiết nhận dạng nhân vật đã được dịch (Tóc, Mắt, Trang phục) để giữ tính nhất quán.";
     }
     // ----------------------------------------
 

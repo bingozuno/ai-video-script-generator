@@ -42,6 +42,7 @@ export interface ProjectState {
   includeMusic: boolean;
   dialogueLanguage: string;
   limitCharacterCount: boolean;
+  limitPromptLength: boolean; // <--- Đã thêm: Giới hạn 1600 ký tự
   selectedModel?: string; 
   script: Script | null;
 }
@@ -119,6 +120,7 @@ export interface Translation {
   customDetail: string;
   imgPrompt: string;
   limitChar: string;
+  limit1600Char: string; // <--- Đã thêm: Label cho nút giới hạn 1600
   motionPrompt: string;
   createBtn: string;
   createBatch: string;

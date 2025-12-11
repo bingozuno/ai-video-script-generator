@@ -18,6 +18,7 @@ interface InputFormProps {
   includeMusic: boolean;
   dialogueLanguage: string;
   limitCharacterCount: boolean;
+  limitPromptLength: boolean; // <--- Đã thêm prop
   isLoading: boolean;
   isSplitting: boolean;
   isGeneratingDef: boolean;
@@ -46,6 +47,7 @@ interface InputFormProps {
   setIncludeMusic: (value: boolean) => void;
   setDialogueLanguage: (lang: string) => void;
   setLimitCharacterCount: (value: boolean) => void;
+  setLimitPromptLength: (value: boolean) => void; // <--- Đã thêm hàm set
   setStyles: (styles: StyleInfo[]) => void;
   setAspectRatios: (ratios: {name: string, value: string}[]) => void;
   setStoryChapters: (chapters: StoryChapter[] | ((prev: StoryChapter[]) => StoryChapter[])) => void;
@@ -89,26 +91,13 @@ export const defaultAspectRatios = [
 ];
 
 // --- DANH SÁCH MODEL ---
-// Cập nhật Value theo đúng mã API của Google
 export const AVAILABLE_MODELS = [
-    // 1. Gemini 2.5 Flash (Bản Mới nhất):
-    // Dòng model mới nhất vừa ra mắt, tốc độ cao và thông minh hơn.
     { label: 'Gemini 2.5 Flash (New)', value: 'gemini-2.5-flash' },
-
-    // 2. Gemini Flash-Lite (Tự động cập nhật):
-    // Trỏ về bản Flash ổn định mới nhất tại mọi thời điểm (An toàn nhất).
-    { label: 'Gemini 2.5 Flash-Lite', value: '	gemini-2.5-flash-lite' },
-
+    { label: 'Gemini 2.5 Flash-Lite', value: 'gemini-2.5-flash-lite' },
     { label: 'Gemini 2.0 Pro Preview tts', value: 'gemini-2.5-pro-preview-tts' },
-
-    { label: 'Gemini 2.0 Flash-Lite-Previe', value: 'gemini-2.0-flash-lite-preview' },
-
+    { label: 'Gemini 2.0 Flash-Lite-Preview', value: 'gemini-2.0-flash-lite-preview' },
     { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
-
-    { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
-
     { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
-
     { label: 'Gemini 3 Pro Preview', value: 'gemini-3-pro-preview' },
 ];
 
@@ -116,14 +105,17 @@ const InputForm: React.FC<InputFormProps> = (props) => {
   const {
       apiKey, lang,
       mode, ideaInput, longStoryInput, chapterSplitRange, selectedStylePrompts, characterReferences, characterDefinition, aspectRatio,
-      generateImage, generateMotion, includeMusic, dialogueLanguage, limitCharacterCount,
+      generateImage, generateMotion, includeMusic, dialogueLanguage, limitCharacterCount, 
+      limitPromptLength, // <--- Destructure biến mới
       isLoading, isGeneratingDef, styles, aspectRatios, storyChapters,
       splitMode, numberOfChapters,
       selectedModel, setSelectedModel, 
       characterSource, 
       setMode, setIdeaInput, setLongStoryInput, setChapterSplitRange, setSelectedStylePrompts, setCharacterReferences, setCharacterDefinition,
       setAspectRatio, setGenerateImage, setGenerateMotion, setIncludeMusic,
-      setDialogueLanguage, setLimitCharacterCount, setStyles, setAspectRatios,
+      setDialogueLanguage, setLimitCharacterCount, 
+      setLimitPromptLength, // <--- Destructure hàm mới
+      setStyles, setAspectRatios,
       setStoryChapters, setSplitMode, setNumberOfChapters,
       setCharacterSource, 
       onSubmit, onExport, onImport,
@@ -174,6 +166,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       customDetail: "Tùy chỉnh chi tiết",
       imgPrompt: "Prompt Tạo Ảnh",
       limitChar: "Chỉ tạo tối đa 3 nhân vật trong prompt tạo ảnh",
+      limit1600Char: "Prompt 1600 ký tự (dreamina)", // <--- Label tiếng Việt
       motionPrompt: "Prompt Tạo Chuyển Động",
       createBtn: "Tạo Kịch bản & Prompts",
       createBatch: "Tạo Kịch bản (Batch)",
@@ -212,6 +205,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       customDetail: "Detailed Settings",
       imgPrompt: "Image Prompt",
       limitChar: "Limit max 3 characters in image prompt",
+      limit1600Char: "Limit prompt length to 1600 chars (dreamina)", // <--- Label tiếng Anh
       motionPrompt: "Motion Prompt",
       createBtn: "Generate Script & Prompts",
       createBatch: "Generate Script (Batch)",
@@ -529,6 +523,11 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                 <label htmlFor="limit-char-toggle" className={`ml-3 block text-sm font-medium transition-colors ${generateMotion ? 'text-slate-500' : 'text-slate-200'}`}>{t.limitChar}</label>
               </div>
               <div className="flex items-center"><input type="checkbox" id="motion-prompt-toggle" checked={generateMotion} onChange={(e) => setGenerateMotion(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" /><label htmlFor="motion-prompt-toggle" className="ml-3 block text-sm font-medium text-slate-200">{t.motionPrompt}</label></div>
+              {/* --- CHECKBOX MỚI: 1600 KÝ TỰ --- */}
+              <div className="flex items-center">
+                <input type="checkbox" id="limit-length-toggle" checked={limitPromptLength} onChange={(e) => setLimitPromptLength(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-cyan-400 focus:ring-cyan-500" />
+                <label htmlFor="limit-length-toggle" className="ml-3 block text-sm font-medium text-slate-200">{t.limit1600Char}</label>
+              </div>
             </div>
             <button type="submit" disabled={isSubmitDisabled} className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-cyan-500 disabled:bg-slate-500 disabled:cursor-not-allowed transition-all">
               {isLoading ? <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>{storyChapters.length > 0 && !isSubmitDisabled ? t.createBatch : t.createBtn}</> : t.createBtn}

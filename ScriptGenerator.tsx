@@ -153,6 +153,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
   const [storyChapters, setStoryChapters] = useState<StoryChapter[]>([]);
   const [characterSource, setCharacterSource] = useState<'definition' | 'references'>('definition');
   const [limitCharacterCount, setLimitCharacterCount] = useState<boolean>(false);
+  const [limitPromptLength, setLimitPromptLength] = useState<boolean>(false); // <--- Đã thêm state mới
   
   // --- STATE MODEL MỚI (Lấy giá trị đầu tiên trong danh sách làm mặc định) ---
   const [selectedModel, setSelectedModel] = useState<string>(AVAILABLE_MODELS[0].value);
@@ -279,7 +280,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
           apiKey,
           characterSource,
           limitCharacterCount,
-          selectedModel // <--- Truyền model xuống Service
+          limitPromptLength, // <--- Đã thêm tham số này vào hàm gọi
+          selectedModel 
       );
 
       // Gộp kết quả mới vào bảng cũ
@@ -435,7 +437,8 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
       mode, ideaInput, longStoryInput, storyChapters, selectedStylePrompts, characterReferences, 
       characterDefinition, aspectRatio, generateImage, generateMotion, includeMusic, dialogueLanguage, script,
       limitCharacterCount, 
-      selectedModel // <--- Lưu model vào file JSON
+      limitPromptLength, // <--- Đã thêm: Xuất trạng thái nút mới
+      selectedModel 
     };
     const dataStr = JSON.stringify(projectState, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -469,6 +472,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
         setIncludeMusic(projectState.includeMusic || false);
         setDialogueLanguage(projectState.dialogueLanguage || 'Vietnamese');
         setLimitCharacterCount(projectState.limitCharacterCount || false);
+        setLimitPromptLength(projectState.limitPromptLength || false); // <--- Đã thêm: Nạp trạng thái nút mới
 
         // Nạp model từ file nếu có, nếu không thì lấy mặc định
         if (projectState.selectedModel) {
@@ -506,8 +510,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ apiKey, lang, onAllFi
             dialogueLanguage={dialogueLanguage} isLoading={isLoading} isSplitting={false} isGeneratingDef={isGeneratingDef}
             styles={styles} aspectRatios={aspectRatios} storyChapters={storyChapters} splitMode={splitMode} numberOfChapters={numberOfChapters}
             limitCharacterCount={limitCharacterCount} setLimitCharacterCount={setLimitCharacterCount}
+            limitPromptLength={limitPromptLength} setLimitPromptLength={setLimitPromptLength} // <--- Đã thêm props
             
-            selectedModel={selectedModel} setSelectedModel={setSelectedModel} // <--- Truyền Props xuống InputForm
+            selectedModel={selectedModel} setSelectedModel={setSelectedModel} 
 
             setMode={setMode} setIdeaInput={setIdeaInput} setLongStoryInput={setLongStoryInput} setChapterSplitRange={setChapterSplitRange}
             setSelectedStylePrompts={setSelectedStylePrompts} setCharacterReferences={setCharacterReferences} setCharacterDefinition={setCharacterDefinition}
