@@ -94,11 +94,8 @@ export const defaultAspectRatios = [
 export const AVAILABLE_MODELS = [
     { label: 'Gemini 2.5 Flash (New)', value: 'gemini-2.5-flash' },
     { label: 'Gemini 2.5 Flash-Lite', value: 'gemini-2.5-flash-lite' },
-    { label: 'Gemini 2.0 Pro Preview tts', value: 'gemini-2.5-pro-preview-tts' },
-    { label: 'Gemini 2.0 Flash-Lite-Preview', value: 'gemini-2.0-flash-lite-preview' },
-    { label: 'Gemini 2.0 Flash (Stable)', value: 'gemini-2.0-flash' },
-    { label: 'Gemini 2.5 Pro (Powerful)', value: 'gemini-2.5-pro' },
-    { label: 'Gemini 3 Pro Preview', value: 'gemini-3-pro-preview' },
+    { label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro' },
+    { label: 'Gemini 3 Pro', value: 'gemini-3-pro-preview' },
 ];
 
 const InputForm: React.FC<InputFormProps> = (props) => {
