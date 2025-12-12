@@ -12,24 +12,26 @@ interface SceneTableProps {
 
 const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerateImage, onRegeneratePrompt, onOpenImage }) => {
   const t = lang === 'vi' ? {
-      stt: "STT",
-      desc: "MÔ TẢ KỊCH BẢN",
-      imgPrompt: "PROMPT TẠO ẢNH",
-      motionPrompt: "PROMPT CHUYỂN ĐỘNG",
-      result: "ẢNH TẠO RA",
-      genImgBtn: "Tạo ảnh",
-      regenBtn: "Tạo lại Prompt",
-      generating: "Đang tạo..."
-  } : {
-      stt: "#",
-      desc: "SCENE DESCRIPTION",
-      imgPrompt: "IMAGE PROMPT",
-      motionPrompt: "MOTION PROMPT",
-      result: "GENERATED IMAGE",
-      genImgBtn: "Generate Image",
-      regenBtn: "Regenerate",
-      generating: "Generating..."
-  };
+        stt: "STT",
+        desc: "MÔ TẢ KỊCH BẢN",
+        imgPrompt: "PROMPT TẠO ẢNH",
+        motionPrompt: "PROMPT CHUYỂN ĐỘNG",
+        result: "ẢNH TẠO RA",
+        genImgBtn: "Tạo ảnh",
+        regenBtn: "Tạo lại Prompt",
+        generating: "Đang tạo...",
+        chars: "ký tự" // <--- MỚI THÊM
+    } : {
+        stt: "#",
+        desc: "SCENE DESCRIPTION",
+        imgPrompt: "IMAGE PROMPT",
+        motionPrompt: "MOTION PROMPT",
+        result: "GENERATED IMAGE",
+        genImgBtn: "Generate Image",
+        regenBtn: "Regenerate",
+        generating: "Generating...",
+        chars: "chars" // <--- MỚI THÊM
+    };
 
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-700">
@@ -55,7 +57,7 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerate
                   {scene.sceneNumber}
               </td>
 
-              {/* Cột Mô Tả - Giới hạn chiều cao content để không vỡ hàng */}
+              {/* Cột Mô Tả */}
               <td className="px-4 py-4 align-top h-[249px]">
                 <div className="h-[215px] overflow-y-auto pr-2 custom-scrollbar">
                     <div className="prose prose-invert prose-sm max-w-none">
@@ -65,9 +67,14 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerate
                 </div>
               </td>
 
-              {/* Cột Prompt Ảnh */}
+              {/* Cột Prompt Ảnh (Đã thêm bộ đếm ký tự) */}
               <td className="px-4 py-4 align-top space-y-2 h-[249px]">
                 <div className="h-[215px] overflow-y-auto pr-2 custom-scrollbar flex flex-col">
+                    {/* BỘ ĐẾM KÝ TỰ MỚI */}
+                    <div className="text-right text-[10px] text-slate-500 font-mono mb-1">
+                        {scene.imagePrompt.length} {t.chars}
+                    </div>
+                    
                     <CodeBlock code={scene.imagePrompt} language="markdown" maxHeight="150px" />
                     <div className="flex space-x-2 mt-2">
                         <button 
@@ -88,7 +95,7 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerate
                 </div>
               </td>
 
-              {/* Cột Ảnh Kết Quả - Căn giữa ảnh trong khung 249px */}
+              {/* Cột Ảnh Kết Quả */}
               <td className="px-4 py-4 align-top h-[249px]">
                  <div className="h-[215px] overflow-y-auto pr-1 flex flex-col justify-start">
                      {scene.generatedImages && scene.generatedImages.length > 0 ? (
@@ -111,9 +118,14 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerate
                  </div>
               </td>
 
-              {/* Cột Motion Prompt */}
+              {/* Cột Motion Prompt (Đã thêm bộ đếm ký tự) */}
               <td className="px-4 py-4 align-top h-[249px]">
                 <div className="h-[215px] overflow-y-auto pr-2 custom-scrollbar">
+                    {/* BỘ ĐẾM KÝ TỰ MỚI */}
+                    <div className="text-right text-[10px] text-slate-500 font-mono mb-1">
+                        {scene.motionPrompt.length} {t.chars}
+                    </div>
+
                     <CodeBlock code={scene.motionPrompt} language="json" maxHeight="200px" />
                 </div>
               </td>
