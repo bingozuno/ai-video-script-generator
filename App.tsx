@@ -249,12 +249,12 @@ const App: React.FC = () => {
                   </div>
 
                   {/* 2. API Key Input (Ở Giữa - Mới chuyển lên) */}
-                  <div className="flex items-center flex-grow max-w-2xl mx-4 w-full">
-                    <div className="flex w-full bg-slate-800 rounded-md border border-slate-600 overflow-hidden">
+                  <div className="flex items-center mx-4">
+                    <div className="flex bg-slate-800 rounded-md border border-slate-600 overflow-hidden">
                         <input 
                             type="password" 
                             placeholder={t.apiKeyLabel} 
-                            className="flex-grow bg-slate-800 px-3 py-1.5 text-sm text-slate-200 focus:outline-none placeholder-slate-500" 
+                            className="w-[320px] bg-slate-800 px-3 py-1.5 text-sm text-slate-200 focus:outline-none placeholder-slate-500" 
                             value={apiKey} 
                             onChange={(e) => setApiKey(e.target.value)}
                         />
