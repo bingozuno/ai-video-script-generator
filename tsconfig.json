@@ -18,12 +18,13 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
-    "baseUrl": ".", // <-- THÊM DÒNG NÀY ĐỂ SỬA LỖI
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
       ]
     },
     "noEmit": true
-  }
+  },
+  "include": ["."]
 }
