@@ -223,70 +223,76 @@ Khi tạo "Prompt Tạo Ảnh" cho phong cách này, BẮT BUỘC tuân thủ:
 
 // --- CÁC HÀM HELPERS ---
 
-// --- FIX LỖI PARSER (QUAN TRỌNG) ---
-// Hàm này được viết lại để xử lý trường hợp AI trả về bảng bị dồn dòng (dùng dấu || thay vì xuống dòng)
+// --- FIX LỖI PARSER 2.0 (QUAN TRỌNG: HỖ TRỢ CẢ JSON VÀ BẢNG) ---
+// AI Gemini 2.5 rất thông minh, đôi khi nó trả về JSON thay vì Bảng Markdown dù mình không yêu cầu.
+// Hàm này sẽ tự động phát hiện và xử lý cả 2 trường hợp.
 const parseGeminiResponse = (responseText: string): Script => {
+  // 1. Dọn dẹp chuỗi phản hồi (Xóa markdown code block nếu có)
+  const cleanText = responseText.replace(/```json|```/g, '').trim();
+
+  // 2. THỬ PARSE JSON TRƯỚC (Vì lỗi bạn gặp là do AI trả về JSON)
+  try {
+    // Nếu bắt đầu bằng [ hoặc { thì khả năng cao là JSON
+    if (cleanText.startsWith('[') || cleanText.startsWith('{')) {
+       console.log("Phát hiện định dạng JSON từ AI, đang xử lý...");
+       let json = JSON.parse(cleanText);
+       
+       // Chuẩn hóa thành mảng
+       const scenesArray = Array.isArray(json) ? json : (json.scenes || [json]);
+
+       const scenes: Scene[] = scenesArray.map((item: any, index: number) => {
+         // Map các trường từ JSON (AI có thể dùng tiếng Việt hoặc tiếng Anh làm key)
+         return {
+           sceneNumber: String(item["STT/Phân cảnh"] || item.sceneNumber || `Cảnh ${index + 1}`),
+           duration: String(item["Thời gian (8 giây)"] || item.duration || "8s"),
+           description: String(item["Mô tả Kịch bản Chi tiết"] || item.description || ""),
+           imagePrompt: String(item["Prompt Tạo Ảnh (Whisk AI)"] || item.imagePrompt || ""),
+           motionPrompt: typeof item["Prompt Tạo Chuyển động (Veo 3.1)"] === 'object' 
+              ? JSON.stringify(item["Prompt Tạo Chuyển động (Veo 3.1)"]) 
+              : String(item["Prompt Tạo Chuyển động (Veo 3.1)"] || "{}")
+         };
+       });
+
+       if (scenes.length > 0) return { scenes };
+    }
+  } catch (e) {
+    console.log("Không phải JSON hợp lệ, chuyển sang xử lý Bảng Markdown...");
+  }
+
+  // 3. NẾU KHÔNG PHẢI JSON, XỬ LÝ NHƯ BẢNG MARKDOWN (Code cũ)
   try {
     const tableMatch = responseText.match(/### Bảng Phân cảnh\s*([\s\S]*)/);
     if (!tableMatch) {
-      throw new Error("Không tìm thấy '### Bảng Phân cảnh' trong phản hồi. Định dạng không hợp lệ.");
+      // Nếu không tìm thấy header bảng, và cũng không phải JSON, thì mới báo lỗi
+      throw new Error("Không tìm thấy '### Bảng Phân cảnh' và cũng không phải JSON hợp lệ.");
     }
     
     let tableContent = tableMatch[1].trim();
     
-    // BƯỚC XỬ LÝ QUAN TRỌNG:
-    // Thay thế các dấu "||" (mà AI hay dùng để ngắt dòng lỗi) thành "\n|" để tách dòng chuẩn.
-    // Đồng thời xử lý trường hợp "| **Số** |" bị dính liền.
+    // Xử lý dòng bị dính
     tableContent = tableContent.replace(/\|\|\s*(\**\d+\**)\s*\|/g, '\n| $1 |');
     
-    // 1. Tách dòng
     const rawLines = tableContent.split('\n');
-    
-    // 2. Logic gộp dòng thông minh (Smart Merge)
     const mergedRows: string[] = [];
     let currentBuffer = "";
-
-    // Regex nhận diện dòng mới: Bắt đầu bằng dấu | (có thể có khoảng trắng) và số thứ tự
-    // Ví dụ: | 1 | hoặc | **1** | hoặc | 01 |
     const rowStartRegex = /^\|\s*(?:Cảnh\s*)?(?:\*\*)?\d+(?:\*\*)?\s*\|/;
 
     for (const line of rawLines) {
         const trimmed = line.trim();
-        // Bỏ qua dòng trống, dòng tiêu đề, dòng gạch ngang phân cách
-        if (!trimmed || trimmed.includes('| STT/Phân cảnh |') || /^[|:\s-]+$/.test(trimmed)) {
-            continue;
-        }
+        if (!trimmed || trimmed.includes('| STT/Phân cảnh |') || /^[|:\s-]+$/.test(trimmed)) continue;
 
-        // Nếu dòng bắt đầu bằng | số |, thì đây là một hàng mới
         if (rowStartRegex.test(trimmed)) {
-            // Đẩy hàng cũ vào mảng (nếu có)
-            if (currentBuffer) {
-                mergedRows.push(currentBuffer);
-            }
-            // Bắt đầu hàng mới
+            if (currentBuffer) mergedRows.push(currentBuffer);
             currentBuffer = trimmed;
         } else {
-            // Nếu không, đây là phần tiếp theo của hàng trước (ví dụ: dòng mới trong JSON)
-            // Gộp vào hàng trước bằng dấu cách
-            if (currentBuffer) {
-                currentBuffer += " " + trimmed;
-            }
+            if (currentBuffer) currentBuffer += " " + trimmed;
         }
     }
-    // Đừng quên đẩy hàng cuối cùng vào
-    if (currentBuffer) {
-        mergedRows.push(currentBuffer);
-    }
+    if (currentBuffer) mergedRows.push(currentBuffer);
 
-    // 3. Xử lý các hàng đã gộp
     const scenes: Scene[] = mergedRows.map((row, index) => {
-      // Tách cột bằng dấu |
       const columns = row.split('|').map(cell => cell.trim()).slice(1, -1); 
-      
-      if (columns.length < 5) {
-        console.warn(`Hàng ${index + 1} thiếu cột. Số cột: ${columns.length}`, row);
-        return null;
-      }
+      if (columns.length < 5) return null;
 
       const cleanMarkdownBlock = (str: string) => str.replace(/^```(json)?\s*|\s*```$/g, '').trim();
 
@@ -299,14 +305,13 @@ const parseGeminiResponse = (responseText: string): Script => {
       };
     }).filter((scene): scene is Scene => scene !== null);
 
-    if (scenes.length === 0) {
-        throw new Error("Không thể phân tích bất kỳ cảnh nào. AI trả về định dạng bảng bị lỗi.");
-    }
+    if (scenes.length === 0) throw new Error("Không thể phân tích cảnh nào từ bảng.");
 
     return { scenes };
   } catch (error) {
-    console.error("Lỗi phân tích phản hồi của Gemini:", error);
-    throw new Error(`Không thể phân tích phản hồi từ AI. Lỗi: ${error instanceof Error ? error.message : String(error)}. Phản hồi gốc: ${responseText}`);
+    console.error("Lỗi phân tích phản hồi:", error);
+    // In ra phản hồi gốc để debug nếu vẫn lỗi
+    throw new Error(`Không thể phân tích phản hồi từ AI. Lỗi: ${error instanceof Error ? error.message : String(error)}. Phản hồi gốc: ${responseText.substring(0, 200)}...`);
   }
 };
 
@@ -423,7 +428,7 @@ export const generateScript = async (
     apiKey: string,
     characterSource: 'definition' | 'references', 
     limitCharacterCount: boolean = false,
-    limitPromptLength: boolean = false, // <--- Đã thêm tham số này
+    limitPromptLength: boolean = false, 
     modelName: string 
 ): Promise<Script> => {
   try {
@@ -473,8 +478,6 @@ export const generateScript = async (
         finalCharacterDefinition = "Trống (Đã chọn Định nghĩa nhân vật nhưng không có mô tả).";
       }
     }
-    // --- KẾT THÚC LOGIC MỚI ---
-    
     
     // --- LOGIC MỚI: INJECT VÀO SYSTEM PROMPT ---
     let systemPrompt = baseSystemPrompt.replace('{{PROMPT_GENERATION_INSTRUCTIONS}}', instructions);
@@ -501,8 +504,6 @@ export const generateScript = async (
     fullUserInput += `\n**Bao gồm Âm nhạc:** ${includeMusic ? 'Có' : 'Không'}`;
     fullUserInput += `\n**Ngôn ngữ đối thoại:** ${dialogueLanguage}`;
     
-    // Chúng ta không cần gửi Nguồn Chân Lý ở đây nữa.
-    
     fullUserInput += `\n\n**Nội dung yêu cầu:**\n${userInput}`;
 
     const contentParts: Part[] = [{ text: `${systemPrompt}\n\n**Yêu cầu của người dùng:** ${fullUserInput}` }];
@@ -521,7 +522,7 @@ export const generateScript = async (
     });
 
     const response = await ai.models.generateContent({
-      model: modelName, // <--- Sử dụng Model được chọn
+      model: modelName, 
       contents: { parts: contentParts },
     });
 
@@ -530,6 +531,7 @@ export const generateScript = async (
       throw new Error("Phản hồi từ Gemini bị trống.");
     }
     
+    // SỬ DỤNG HÀM PARSER MỚI
     return parseGeminiResponse(responseText);
   } catch (error) {
     console.error("Lỗi khi gọi Gemini API:", error);
@@ -558,7 +560,7 @@ export const generateStorytellingPrompts = async (
     aspectRatio: string,
     characterDefinition: string,
     apiKey: string,
-    modelName: string = "gemini-1.5-pro" // <--- Thêm param default để tránh lỗi nếu code cũ gọi
+    modelName: string = "gemini-1.5-pro" 
 ): Promise<StorytellingScene[]> => {
     let userPrompt = `
     **Dữ liệu của người dùng:**
@@ -586,7 +588,7 @@ export const generateStorytellingPrompts = async (
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: modelName, // <--- Sử dụng Model được chọn
+            model: modelName, 
             contents: [{ parts: [{ text: userPrompt }] }],
             config: {
                 systemInstruction: STORYTELLING_SYSTEM_PROMPT,
@@ -624,7 +626,6 @@ export const generateStorytellingPrompts = async (
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : String(e);
         console.error("Lỗi khi tạo kịch bản kể chuyện:", e);
-        // Let's not include the raw response in the user-facing error to avoid clutter, it's already in the console.
         throw new Error(`AI không thể xử lý yêu cầu. Lỗi: ${errorMessage}`);
     }
 };
@@ -638,7 +639,7 @@ export const regenerateScenePrompts = async (
   stylePrompt: string,
   aspectRatio: string,
   apiKey: string,
-  modelName: string // <--- Tham số Model mới
+  modelName: string 
 ): Promise<{ imagePrompt: string; motionPrompt: string }> => { 
   try {
     if (!apiKey) throw new Error("Vui lòng nhập Gemini API Key.");
