@@ -33,7 +33,45 @@ const translations: Record<Language, Translation> = {
     coffeeTitle: "Mời tôi một ly cà phê",
     coffeeDesc1: "Công cụ miễn phí này được tạo ra bởi “TIẾN DŨNG JXD”.",
     coffeeDesc2: "Nếu bạn cảm thấy hài lòng, một ly cà phê nhỏ từ bạn qua mã QR sẽ là nguồn động lực lớn để tôi tiếp tục phát triển thêm nhiều tiện ích hữu ích cho cộng đồng. Cảm ơn bạn rất nhiều!",
-    close: "Đóng"
+    close: "Đóng",
+    // --- CÁC KEY CÒN THIẾU TỪ TYPES.TS ---
+    manageTitle: "Quản lý Dự án & Tùy chọn Kịch bản",
+    export: "Xuất Dự án (.json)",
+    import: "Nạp Dự án từ File",
+    selectModel: "Chọn Model AI:",
+    inputStory: "Nhập câu chuyện",
+    splitRange: "Mỗi chương:",
+    chars: "ký tự",
+    splitNum: "Chia thành:",
+    chapters: "chương",
+    splitBtn: "Chia ngay",
+    scenesDone: "Đã chia cảnh",
+    noChapters: "Chưa có chương nào.",
+    noChaptersHint: "Nhập truyện và nhấn 'Chia ngay'.",
+    charSource1: "1. Định nghĩa nhân vật (Văn bản)",
+    charSource2: "2. Tham chiếu nhân vật (Hình ảnh)",
+    charDefHint: "Mô tả chi tiết ngoại hình nhân vật (Tiếng Việt) để AI sử dụng.",
+    autoGen: "Tự động tạo từ truyện",
+    analyzing: "Đang phân tích...",
+    charRefHint: "Tải ảnh nhân vật lên để AI phân tích và lấy mô tả.",
+    dropImage: "Thả ảnh vào đây",
+    uploadImage: "Tải/Kéo ảnh",
+    analyzeAI: "Phân tích bằng AI",
+    addChar: "Thêm nhân vật",
+    customDetail: "Tùy chỉnh chi tiết",
+    imgPrompt: "Prompt Tạo Ảnh",
+    limitChar: "Chỉ tạo tối đa 3 nhân vật trong prompt tạo ảnh",
+    limit1600Char: "Prompt 1600 ký tự (dreamina)",
+    motionPrompt: "Prompt Tạo Chuyển Động",
+    createBtn: "Tạo Kịch bản & Prompts",
+    createBatch: "Tạo Kịch bản (Batch)",
+    music: "Bao gồm mô tả âm nhạc (Music) trong prompt.",
+    dialogueLang: "Ngôn ngữ đối thoại",
+    styleTitle: "Phong cách (Chọn tối đa 3)",
+    styleAdd: "Thêm mới +",
+    styleClose: "Đóng",
+    ratioTitle: "Tỉ lệ khung hình",
+    ratioAdd: "Nhập +"
   },
   en: {
     title: "AI Video Script Generator",
@@ -59,7 +97,45 @@ const translations: Record<Language, Translation> = {
     coffeeTitle: "Buy me a coffee",
     coffeeDesc1: "This free tool was created by “TIẾN DŨNG JXD”.",
     coffeeDesc2: "If you find it useful, a small coffee via QR code would be a great motivation for me to continue developing more useful tools for the community. Thank you very much!",
-    close: "Close"
+    close: "Close",
+    // --- MISSING KEYS FROM TYPES.TS ---
+    manageTitle: "Project Management",
+    export: "Export Project (.json)",
+    import: "Import Project",
+    selectModel: "Select AI Model:",
+    inputStory: "Input Story",
+    splitRange: "Per chapter:",
+    chars: "chars",
+    splitNum: "Split into:",
+    chapters: "chapters",
+    splitBtn: "Split Now",
+    scenesDone: "Scenes Split",
+    noChapters: "No chapters yet.",
+    noChaptersHint: "Enter story and click 'Split Now'.",
+    charSource1: "1. Character Definition (Text)",
+    charSource2: "2. Character Reference (Image)",
+    charDefHint: "Describe character appearance in detail for AI.",
+    autoGen: "Auto-generate from story",
+    analyzing: "Analyzing...",
+    charRefHint: "Upload character images for AI analysis.",
+    dropImage: "Drop image here",
+    uploadImage: "Upload/Drag image",
+    analyzeAI: "Analyze with AI",
+    addChar: "Add Character",
+    customDetail: "Detailed Settings",
+    imgPrompt: "Image Prompt",
+    limitChar: "Limit max 3 characters in image prompt",
+    limit1600Char: "Limit prompt length to 1600 chars (dreamina)",
+    motionPrompt: "Motion Prompt",
+    createBtn: "Generate Script & Prompts",
+    createBatch: "Generate Script (Batch)",
+    music: "Include Music description in prompt.",
+    dialogueLang: "Dialogue Language",
+    styleTitle: "Style (Select max 3)",
+    styleAdd: "Add New +",
+    styleClose: "Close",
+    ratioTitle: "Aspect Ratio",
+    ratioAdd: "Custom +"
   }
 };
 
@@ -162,18 +238,40 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
+      <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-700">
           <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col md:flex-row justify-between items-center border-b border-slate-700 py-2 gap-4 md:gap-0">
+              <div className="flex flex-col xl:flex-row justify-between items-center py-2 gap-4">
                   
-                  {/* Tabs */}
-                  <div className="flex mb-2 md:mb-0">
+                  {/* 1. Tabs (Bên Trái) */}
+                  <div className="flex flex-shrink-0">
                     <TabButton tabId="scriptGenerator" label={t.tabScript} />
                     <TabButton tabId="watermarkRemover" label={t.tabWatermark} />
                   </div>
 
-                  {/* Right Actions */}
-                  <div className="flex items-center space-x-4 flex-wrap justify-center">
+                  {/* 2. API Key Input (Ở Giữa - Mới chuyển lên) */}
+                  <div className="flex items-center flex-grow max-w-2xl mx-4 w-full">
+                    <div className="flex w-full bg-slate-800 rounded-md border border-slate-600 overflow-hidden">
+                        <input 
+                            type="password" 
+                            placeholder={t.apiKeyLabel} 
+                            className="flex-grow bg-slate-800 px-3 py-1.5 text-sm text-slate-200 focus:outline-none placeholder-slate-500" 
+                            value={apiKey} 
+                            onChange={(e) => setApiKey(e.target.value)}
+                        />
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-slate-900 text-xs font-bold flex items-center transition-colors whitespace-nowrap">
+                            {t.getKey}
+                        </a>
+                        <button type="button" onClick={handleSaveKey} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-colors whitespace-nowrap">
+                            {t.save}
+                        </button>
+                        <button type="button" onClick={handleClearKey} className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors whitespace-nowrap">
+                            {t.delete}
+                        </button>
+                    </div>
+                  </div>
+
+                  {/* 3. Right Actions (Social & Lang - Bên Phải) */}
+                  <div className="flex items-center space-x-3 flex-shrink-0">
                       
                       {/* NÚT NGÔN NGỮ */}
                       <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
@@ -184,50 +282,26 @@ const App: React.FC = () => {
                       {/* NÚT CAFE */}
                       <button 
                         onClick={() => setShowQR(true)}
-                        className="flex items-center px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-500/50 text-yellow-300 rounded-full text-xs font-bold transition-all group"
+                        className="flex items-center px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-500/50 text-yellow-300 rounded-full text-xs font-bold transition-all group whitespace-nowrap"
                       >
                         <span className="mr-1 text-base group-hover:animate-bounce">☕</span>
                         {t.buyCoffee}
                       </button>
 
-                      {/* App Store (Giữ nguyên tên file ảnh) */}
-                      <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/App Store.png" alt="App Store" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">App Store</span>
-                      </a>
-
-                      {/* Các Icon MXH (Giữ nguyên tên file ảnh) */}
-                      <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/Zalo.png" alt="Zalo" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Zalo</span>
-                      </a>
-                      <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                          <img src="/Youtube.png" alt="YouTube" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                          <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">YouTube</span>
-                      </a>
-                      <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                           <img src="/Tiktok.png" alt="TikTok" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">TikTok</span>
-                      </a>
-                      <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center group">
-                           <img src="/Facebook.png" alt="Facebook" className="w-8 h-8 object-contain hover:scale-110 transition-transform"/>
-                           <span className="text-[10px] sm:text-xs mt-1 font-medium text-slate-400 group-hover:text-white">Facebook</span>
-                      </a>
+                      {/* Các Icon MXH */}
+                      <div className="flex items-center space-x-2">
+                        <a href="https://tiendungjxd.my.canva.site/" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><img src="/App Store.png" alt="App Store" className="w-6 h-6 object-contain"/></a>
+                        <a href="https://drive.google.com/file/d/1tvN5fsdJAUSX_Cl820yoceM6gTEEMvAG/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><img src="/Zalo.png" alt="Zalo" className="w-6 h-6 object-contain"/></a>
+                        <a href="https://www.youtube.com/channel/UCFhWGw9eTCgp2bmbuimkurg" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><img src="/Youtube.png" alt="YouTube" className="w-6 h-6 object-contain"/></a>
+                        <a href="https://www.tiktok.com/@chuyendramagiadinh" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><img src="/Tiktok.png" alt="TikTok" className="w-6 h-6 object-contain"/></a>
+                        <a href="https://www.facebook.com/ToolsElevenlabsPro" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><img src="/Facebook.png" alt="Facebook" className="w-6 h-6 object-contain"/></a>
+                      </div>
                   </div>
               </div>
           </div>
       </nav>
       
-      {/* API Key Input */}
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 border-b border-slate-700 bg-slate-800/50">
-        <label htmlFor="api-key-input" className="block text-sm font-medium text-yellow-400 mb-2">{t.apiKeyLabel}</label>
-        <div className="flex">
-          <input id="api-key-input" type="password" placeholder="API Key..." className="flex-grow bg-slate-700 border border-slate-600 rounded-l-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-yellow-500" value={apiKey} onChange={(e) => setApiKey(e.target.value)}/>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 px-4 py-2 bg-yellow-600 text-slate-900 text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center">{t.getKey}</a>
-          <button type="button" onClick={handleSaveKey} className="flex-shrink-0 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700">{t.save}</button>
-          <button type="button" onClick={handleClearKey} className="flex-shrink-0 px-4 py-2 bg-red-600 text-white rounded-r-md text-sm font-semibold hover:bg-red-700">{t.delete}</button>
-        </div>
-      </div>
+
 
       {/* Main Content */}
       <div style={{ display: activeTab === 'scriptGenerator' ? 'block' : 'none' }}>

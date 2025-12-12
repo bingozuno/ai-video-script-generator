@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ lang = 'vi' }) => {
       <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-sm">
         {t.title}
       </h1>
-      <p className="text-slate-400 text-sm md:text-base max-w-3xl mx-auto px-4">
+      <p className="text-slate-400 text-sm md:text-base w-full max-w-none mx-auto px-4 whitespace-nowrap">
         {t.subtitle}
       </p>
       <div className="pt-2">

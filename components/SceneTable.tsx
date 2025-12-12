@@ -49,7 +49,7 @@ const SceneTable: React.FC<SceneTableProps> = ({ scenes, lang = 'vi', onGenerate
         </thead>
         <tbody className="divide-y divide-slate-700 bg-slate-800/50">
           {scenes.map((scene, index) => (
-            <tr key={index} className="hover:bg-slate-700/30 transition-colors">
+            <tr key={index} className="hover:bg-slate-700/30 transition-colors h-[249px]">
               <td className="px-4 py-4 font-mono text-slate-500 align-top">{scene.sceneNumber}</td>
               <td className="px-4 py-4 align-top">
                 <div className="prose prose-invert prose-sm max-w-none">
