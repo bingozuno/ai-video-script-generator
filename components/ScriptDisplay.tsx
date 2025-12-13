@@ -24,7 +24,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       title: "Bảng Phân Cảnh Chi Tiết",
       downloadTxt: "Tải kịch bản chương",
       downloadPrompt: "Tải Prompt Tạo Ảnh File TXT",
-      downloadExcel: "Tải File Excel",
+      ownloadMotionPrompt: "Tải Prompt Video TXT", 
       loading: "Đang tạo kịch bản...",
       empty: "Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.",
       chapter: "Chương"
@@ -32,7 +32,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       title: "Detailed Storyboard",
       downloadTxt: "Download Chapter Script",
       downloadPrompt: "Download Image Prompts (TXT)",
-      downloadExcel: "Download Excel File",
+      downloadMotionPrompt: "Download Video Prompts (TXT)",
       loading: "Generating script...",
       empty: "Detailed storyboard will appear here.",
       chapter: "Chapter"
@@ -59,19 +59,13 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
     downloadFile(content, 'image_prompts.txt', 'text/plain');
   };
 
-  const handleDownloadExcel = () => {
+  const handleDownloadMotionPromptTxt = () => {
     if (!script) return;
-    // Xuất file Excel (CSV)
-    // Cột Description bây giờ sẽ chứa cả phần "(Nhân vật: ...)" do AI tạo ra
-    const csvContent = "data:text/csv;charset=utf-8," 
-        + "Scene,Description,Image Prompt,Motion Prompt\n"
-        + script.scenes.map(s => `"${s.sceneNumber}","${s.description.replace(/"/g, '""')}","${s.imagePrompt.replace(/"/g, '""')}","${s.motionPrompt.replace(/"/g, '""')}"`).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "script.csv");
-    document.body.appendChild(link);
-    link.click();
+    // Tạo 14 dòng trống giữa các prompt (tức là 15 ký tự xuống dòng)
+    const separator = '\n'.repeat(15); 
+    // Lấy nội dung Motion Prompt và nối lại
+    const content = script.scenes.map(s => s.motionPrompt).join(separator);
+    downloadFile(content, 'motion_prompts.txt', 'text/plain');
   };
 
   const downloadFile = (content: string, fileName: string, contentType: string) => {
@@ -126,14 +120,14 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
                {t.downloadPrompt}
             </button>
 
-            {/* Nút 3: Tải Excel */}
+            {/* Nút 3: Tải Video Prompt TXT */}
             <button 
-                onClick={handleDownloadExcel} 
+                onClick={handleDownloadMotionPromptTxt} 
                 disabled={!script} 
                 className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors disabled:opacity-50 font-medium"
             >
                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-               {t.downloadExcel}
+               {t.downloadMotionPrompt}
             </button>
         </div>
       </div>
