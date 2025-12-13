@@ -61,7 +61,7 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
 
   const handleDownloadMotionPromptTxt = () => {
     if (!script) return;
-    // Tạo 14 dòng trống giữa các prompt (tức là 15 ký tự xuống dòng)
+    // Tạo 1 dòng trống giữa các prompt (tức là 2 ký tự xuống dòng)
     const separator = '\n'.repeat(15); 
     // Lấy nội dung Motion Prompt và nối lại
     const content = script.scenes.map(s => s.motionPrompt).join(separator);
