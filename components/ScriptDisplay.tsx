@@ -24,7 +24,8 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       title: "Bảng Phân Cảnh Chi Tiết",
       downloadTxt: "Tải kịch bản chương",
       downloadPrompt: "Tải Prompt Tạo Ảnh File TXT",
-      ownloadMotionPrompt: "Tải Prompt Video TXT", 
+      downloadMotionPrompt: "Tải Prompt Video TXT", // <--- Quan trọng: Dòng này giúp hiển thị chữ
+      downloadExcel: "Tải File Excel", // Giữ lại để tránh lỗi nếu code cũ còn gọi
       loading: "Đang tạo kịch bản...",
       empty: "Bảng phân cảnh chi tiết sẽ xuất hiện ở đây.",
       chapter: "Chương"
@@ -32,7 +33,8 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
       title: "Detailed Storyboard",
       downloadTxt: "Download Chapter Script",
       downloadPrompt: "Download Image Prompts (TXT)",
-      downloadMotionPrompt: "Download Video Prompts (TXT)",
+      downloadMotionPrompt: "Download Video Prompts (TXT)", // <--- Quan trọng: Dòng này giúp hiển thị chữ
+      downloadExcel: "Download Excel File",
       loading: "Generating script...",
       empty: "Detailed storyboard will appear here.",
       chapter: "Chapter"
@@ -61,9 +63,9 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({
 
   const handleDownloadMotionPromptTxt = () => {
     if (!script) return;
-    // Tạo 1 dòng trống giữa các prompt (tức là 2 ký tự xuống dòng)
-    const separator = '\n'.repeat(15); 
-    // Lấy nội dung Motion Prompt và nối lại
+    
+    const separator = '\n\n'; 
+    
     const content = script.scenes.map(s => s.motionPrompt).join(separator);
     downloadFile(content, 'motion_prompts.txt', 'text/plain');
   };
