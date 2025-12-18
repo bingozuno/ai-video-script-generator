@@ -1,0 +1,5 @@
+{
+  "name": "Chia Cảnh & Tạo Prompt, Tạo Ảnh Trước Khi Tạo Voice - Chia sẻ cộng đồng",
+  "description": "An application that acts as a Scriptwriting and AI Video Prompt Expert, leveraging Gemini to turn user ideas into detailed scene breakdowns with optimized prompts for image and video generation.",
+  "requestFramePermissions": []
+}
