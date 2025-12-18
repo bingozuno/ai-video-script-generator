@@ -8,9 +8,10 @@ interface HeaderProps {
   apiKey: string;
   onSaveKey: (key: string) => void;
   onDeleteKey: () => void;
+  onCoffeeClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, onSaveKey, onDeleteKey }) => {
+const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, onSaveKey, onDeleteKey, onCoffeeClick }) => {
 
   const [localApiKey, setLocalApiKey] = useState(apiKey);
 
@@ -27,9 +28,7 @@ const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, o
   };
 
   const handleCoffeeClick = () => {
-    const url = 'https://tiendungjxd.my.canva.site/';
-    const windowFeatures = 'width=486,height=516,popup=true';
-    window.open(url, '_blank', windowFeatures);
+    onCoffeeClick();
   };
 
   const socialLinks = [
