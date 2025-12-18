@@ -434,12 +434,14 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                       id="model-select"
                       value={selectedModel}
                       onChange={(e) => setSelectedModel(e.target.value)}
-                      className="w-48 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500"
+                      className="w-64 bg-slate-700 border border-slate-600 rounded-md p-2 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500"
                       disabled={isLoading}
                     >
-                      <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
-                      <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                      <option value="gemini-3-pro-preview">Gemini 3 Pro Preview ({lang === 'vi' ? 'Mạnh nhất, Trả phí' : 'Strongest, Paid'})</option>
+                      <option value="gemini-2.5-pro">Gemini 2.5 Pro ({lang === 'vi' ? 'Ổn định, Trả phí' : 'Stable, Paid'})</option>
+                      <option value="gemini-3-flash-preview">Gemini 3 Flash Preview ({lang === 'vi' ? 'Nhanh & Mới' : 'Fast & New'})</option>
+                      <option value="gemini-flash-latest">Gemini Flash ({lang === 'vi' ? 'Tốc độ' : 'Speed'})</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash ({lang === 'vi' ? 'Cũ hơn' : 'Older'})</option>
                     </select>
                 </div>
             </div>
