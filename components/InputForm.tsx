@@ -628,12 +628,12 @@ const InputForm: React.FC<InputFormProps> = (props) => {
             </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-shrink-0">
             <button
                 type="button"
                 onClick={onClearPrompts}
                 disabled={!script || script.scenes.length === 0 || isLoading}
-                className="px-4 py-2 text-sm font-semibold rounded-md text-slate-300 bg-red-800 hover:bg-red-700 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-semibold rounded-md text-slate-300 bg-red-800 hover:bg-red-700 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
             >
                 {t.clear_prompts_btn}
             </button>
@@ -641,7 +641,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
                 type="button" 
                 onClick={handleMainButtonClick} 
                 disabled={isGenerationStartDisabled && (generationStatus === 'idle' || generationStatus === 'done')}
-                className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-semibold rounded-md shadow-sm text-slate-900 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-yellow-400 disabled:bg-slate-500 disabled:text-slate-300 transition-all">
+                className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-semibold rounded-md shadow-sm text-slate-900 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-yellow-400 disabled:bg-slate-500 disabled:text-slate-300 transition-all whitespace-nowrap">
                 {generationStatus === 'generating' && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="shaking-hourglass -ml-1 mr-2 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 2h14"></path>
