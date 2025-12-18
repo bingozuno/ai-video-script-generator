@@ -138,15 +138,18 @@ const parseGeminiResponse = (responseText: string): Script => {
   }
 };
 
-export const generateCharacterDefinition = async (ai: GoogleGenAI, storyText: string): Promise<string> => {
+export const generateCharacterDefinition = async (ai: GoogleGenAI, storyText: string, modelName: string): Promise<string> => {
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
+            model: modelName,
             contents: [{ parts: [{ text: storyText }] }],
             config: { systemInstruction: CHARACTER_DEFINITION_SYSTEM_INSTRUCTION }
         });
         return response.text || "";
     } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
         throw new Error("Lỗi định nghĩa nhân vật.");
     }
 };

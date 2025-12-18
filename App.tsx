@@ -9,6 +9,7 @@ import InputForm, { defaultStyles, defaultAspectRatios } from './components/Inpu
 import ScriptDisplay from './components/ScriptDisplay';
 import ImageModal from './components/ImageModal';
 import LoginScreen from './components/LoginScreen';
+import CoffeeModal from './components/CoffeeModal';
 import { translations } from './locales/translations';
 
 
@@ -33,6 +34,7 @@ const App: React.FC = () => {
   const [script, setScript] = useState<Script | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalImage, setModalImage] = useState<{src: string, name: string} | null>(null);
+  const [isCoffeeModalOpen, setIsCoffeeModalOpen] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>('idle');
   
   const generationCancelled = useRef(false);
@@ -147,6 +149,14 @@ const App: React.FC = () => {
     setModalImage(null);
   };
 
+  const handleOpenCoffeeModal = () => {
+    setIsCoffeeModalOpen(true);
+  };
+
+  const handleCloseCoffeeModal = () => {
+    setIsCoffeeModalOpen(false);
+  };
+
   const handleGenerateCharacterDefinition = async () => {
     if (!aiInstance) {
       setError(lang === 'vi' ? 'Vui lòng nhập và lưu API Key của bạn.' : 'Please enter and save your API Key.');
@@ -161,7 +171,7 @@ const App: React.FC = () => {
     setIsChatLoading(true);
     setError(null);
     try {
-      const definition = await generateCharacterDefinition(aiInstance, storyText);
+      const definition = await generateCharacterDefinition(aiInstance, storyText, selectedModel);
       setCharacterDefinition(definition);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error.");
@@ -212,11 +222,13 @@ const App: React.FC = () => {
       
       const sourceChapters = chaptersToProcess.length > 0 ? chaptersToProcess : [{ id: 'idea', text: ideaInput }];
       
+      let generationFailed = false;
       for (const [index, chapter] of sourceChapters.entries()) {
           if (generationCancelled.current) break;
           if (!chatRef.current) {
             setError("Chat session not initialized.");
             setGenerationStatus('idle');
+            generationFailed = true;
             break;
           }
 
@@ -244,17 +256,12 @@ const App: React.FC = () => {
 
               if (result.scenes[0]) {
                  setScript(prevScript => {
-                    // This is the definitive guard against race conditions.
-                    // If a clear action has occurred, any pending updates must be discarded
-                    // and the state must be null.
                     if (generationCleared.current) {
                         return null;
                     }
-                    // If a stop action occurred, discard the incoming result but keep existing ones.
                     if (generationCancelled.current) {
                         return prevScript;
                     }
-                    // Otherwise, proceed with the normal update.
                     return {
                       scenes: [...(prevScript?.scenes || []), result.scenes[0]]
                     };
@@ -264,15 +271,14 @@ const App: React.FC = () => {
           } catch (err) {
               setError(err instanceof Error ? err.message : 'Error.');
               setGenerationStatus('idle');
+              generationFailed = true;
               break; 
           }
       }
       
-      if (!generationCancelled.current) {
+      if (!generationCancelled.current && !generationFailed) {
         setGenerationStatus('done');
-        const url = 'https://tiendungjxd.my.canva.site/';
-        const windowFeatures = 'width=486,height=516,popup=true';
-        window.open(url, '_blank', windowFeatures);
+        handleOpenCoffeeModal();
       } else {
         setGenerationStatus('idle');
       }
@@ -431,6 +437,7 @@ const App: React.FC = () => {
         apiKey={apiKey}
         onSaveKey={handleSaveKey}
         onDeleteKey={handleDeleteKey}
+        onCoffeeClick={handleOpenCoffeeModal}
       />
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-slate-800/50 p-6 rounded-lg shadow-lg border border-slate-700">
@@ -478,6 +485,11 @@ const App: React.FC = () => {
       <ImageModal 
         isOpen={!!modalImage} onClose={handleCloseImageModal}
         imageUrl={modalImage?.src || null} imageName={modalImage?.name || null}
+      />
+      <CoffeeModal 
+        isOpen={isCoffeeModalOpen} 
+        onClose={handleCloseCoffeeModal}
+        text={t.coffee_modal_text} 
       />
     </div>
   );
