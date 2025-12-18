@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, o
   ];
 
   return (
-    <header className="text-center p-4 md:p-6 border-b border-slate-800 bg-slate-900/50 overflow-hidden">
+    <>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes coffee-jump {
           0%, 100% { transform: translateY(0) scale(1); }
@@ -96,7 +96,8 @@ const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, o
         }
       `}} />
 
-      <div className="flex flex-wrap justify-between items-center w-full mb-8 gap-3">
+      {/* Sticky Toolbar */}
+      <div className="sticky top-0 z-30 flex flex-wrap justify-between items-center w-full gap-3 bg-slate-900/80 backdrop-blur-sm py-3 px-4 md:px-6 border-b border-slate-700 shadow-lg">
         {/* API Key Management */}
         <div className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 p-2 rounded-lg">
           <input
@@ -190,20 +191,23 @@ const Header: React.FC<HeaderProps> = ({ t, currentLang, onLangChange, apiKey, o
         </div>
       </div>
 
-      <div className="w-full overflow-x-auto no-scrollbar pb-4">
-        <h1 className="text-lg md:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-500 mb-4 tracking-tight whitespace-nowrap px-4">
-          {t.app_title}
-        </h1>
-        <p className="text-slate-400 text-sm md:text-base lg:text-lg mb-6 whitespace-nowrap px-4">
-          {t.app_desc}
-        </p>
-        <div className="inline-block px-6 py-2 rounded-full bg-slate-800/50 border border-slate-700 shadow-xl">
-          <p className="text-lg md:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 uppercase tracking-widest">
-            {t.developed_by}
+      {/* Non-sticky title area */}
+      <header className="text-center p-4 md:p-6 border-b border-slate-800 bg-slate-900/50">
+        <div className="w-full overflow-x-auto no-scrollbar pb-4">
+          <h1 className="text-lg md:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-blue-500 mb-4 tracking-tight whitespace-nowrap px-4">
+            {t.app_title}
+          </h1>
+          <p className="text-slate-400 text-sm md:text-base lg:text-lg mb-6 whitespace-nowrap px-4">
+            {t.app_desc}
           </p>
+          <div className="inline-block px-6 py-2 rounded-full bg-slate-800/50 border border-slate-700 shadow-xl">
+            <p className="text-lg md:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 uppercase tracking-widest">
+              {t.developed_by}
+            </p>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 };
 
