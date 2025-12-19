@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { Script, StyleInfo, ProjectState, StoryChapter } from './types';
-import { GoogleGenAI, Chat } from '@google/genai';
-import { createChatSession, generateScriptFromChat, generateCharacterDefinition, generateImagesFromPrompt, regenerateImagePrompt } from './services/geminiService';
+import { GoogleGenAI } from '@google/genai';
+import { generateScript, generateCharacterDefinition, generateImagesFromPrompt, regenerateImagePrompt } from './services/geminiService';
 import Header from './components/Header';
 import InputForm, { defaultStyles, defaultAspectRatios } from './components/InputForm';
 import ScriptDisplay from './components/ScriptDisplay';
@@ -37,8 +37,6 @@ const App: React.FC = () => {
   const [generationStatus, setGenerationStatus] = useState<GenerationStatus>('idle');
   
   const generationCancelled = useRef(false);
-  const generationCleared = useRef(false);
-  const chatRef = useRef<Chat | null>(null);
   
   const [mode, setMode] = useState<'idea' | 'script'>('idea');
   const [ideaInput, setIdeaInput] = useState('');
@@ -203,74 +201,50 @@ const App: React.FC = () => {
   
       setGenerationStatus('generating');
       generationCancelled.current = false;
-      generationCleared.current = false;
       setError(null);
-      setScript({ scenes: [] }); // Initialize with empty scenes
-      
-      chatRef.current = createChatSession(aiInstance, selectedModel);
-      
-      const sourceChapters = chaptersToProcess.length > 0 ? chaptersToProcess : [{ id: 'idea', text: ideaInput }];
-      
-      let generationFailed = false;
-      for (const [index, chapter] of sourceChapters.entries()) {
-          if (generationCancelled.current) break;
-          if (!chatRef.current) {
-            setError("Chat session not initialized.");
+      setScript(null);
+
+      try {
+        const isScriptMode = chaptersToProcess.length > 0;
+        const finalUserInput = isScriptMode
+            ? chaptersToProcess.map((chapter, index) => `### CHƯƠNG ${index + 1}\n\n${chapter.text}`).join('\n\n---\n\n')
+            : ideaInput;
+        const currentMode = isScriptMode ? 'script' : 'idea';
+        const combinedStylePrompt = selectedStylePrompts.join(', ');
+
+        const result = await generateScript(
+            aiInstance,
+            selectedModel,
+            finalUserInput,
+            currentMode,
+            combinedStylePrompt,
+            characterDefinition,
+            aspectRatio,
+            generateImage,
+            generateMotion,
+            generateWhisk,
+            generateDreamina,
+            includeMusic,
+            dialogueLanguage
+        );
+
+        if (generationCancelled.current) {
             setGenerationStatus('idle');
-            generationFailed = true;
-            break;
-          }
+            return;
+        }
 
-          const currentMode = chaptersToProcess.length > 0 ? 'script' : 'idea';
-  
-          try {
-              const combinedStylePrompt = selectedStylePrompts.join(', ');
-              const result = await generateScriptFromChat(
-                  chatRef.current,
-                  chapter.text, 
-                  currentMode, 
-                  combinedStylePrompt, 
-                  characterDefinition, 
-                  aspectRatio, 
-                  generateImage, 
-                  generateMotion, 
-                  generateWhisk,
-                  generateDreamina, 
-                  includeMusic, 
-                  dialogueLanguage,
-                  index
-              );
-              
-              if (generationCancelled.current) break;
-
-              if (result.scenes[0]) {
-                 setScript(prevScript => {
-                    if (generationCleared.current) {
-                        return null;
-                    }
-                    if (generationCancelled.current) {
-                        return prevScript;
-                    }
-                    return {
-                      scenes: [...(prevScript?.scenes || []), result.scenes[0]]
-                    };
-                 });
-              }
-    
-          } catch (err) {
-              setError(err instanceof Error ? err.message : 'Error.');
-              setGenerationStatus('idle');
-              generationFailed = true;
-              break; 
-          }
-      }
-      
-      if (!generationCancelled.current && !generationFailed) {
+        setScript(result);
         setGenerationStatus('done');
         handleOpenCoffeeModal();
-      } else {
+
+    } catch (err) {
+        if (generationCancelled.current) {
+            setError(lang === 'vi' ? 'Quá trình tạo đã bị dừng.' : 'Generation stopped by user.');
+        } else {
+            setError(err instanceof Error ? err.message : 'Error.');
+        }
         setGenerationStatus('idle');
-      }
+    }
   };
 
   const handleRegenerateImagePrompt = async (sceneIndex: number) => {

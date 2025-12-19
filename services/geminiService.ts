@@ -1,22 +1,25 @@
 
-import { GoogleGenAI, Chat } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import type { Script, Scene } from '../types';
 
 const SYSTEM_INSTRUCTION = `Bạn là một AI chuyên gia tạo kịch bản và prompt hình ảnh.
 
 **QUY TẮC TỐI THƯỢỢNG:**
-BẠN SẼ NHẬN ĐƯỢC DUY NHẤT MỘT CHƯƠNG. BẠN PHẢI TẠO RA DUY NHẤT MỘT PHÂN CẢNH (MỘT HÀNG) TRONG BẢNG MARKDOWN TỪ CHƯƠNG ĐÓ. TUYỆT ĐỐI KHÔNG CHIA NHỎ CẢNH.
+BẠN SẼ NHẬN ĐƯỢC MỘT DANH SÁCH CÁC CHƯƠNG TRUYỆN. BẠN PHẢI TẠO RA MỘT BẢNG MARKDOWN HOÀN CHỈNH, VỚI MỖI HÀNG TRONG BẢNG TƯƠNG ỨNG VỚI MỘT CHƯƠNG.
 
 ---
 
 ### QUY TRÌNH LÀM VIỆC
 
-1.  **Phân tích:** Đọc kỹ chương truyện và các tùy chọn được cung cấp.
-2.  **Tạo Bảng:** Luôn trả về kết quả dưới dạng bảng markdown chỉ có MỘT hàng nội dung.
+1.  **Phân tích:** Đọc kỹ TẤT CẢ các chương truyện và các tùy chọn được cung cấp để hiểu toàn bộ bối cảnh.
+2.  **Tạo Bảng:** Với MỖI chương, tạo ra MỘT hàng tương ứng trong bảng markdown.
+    *   Đảm bảo STT (Số thứ tự) của các phân cảnh phải liên tục.
 
     | STT/Phân cảnh | Mô tả Kịch bản | Prompt Tạo Ảnh | Prompt Tạo Chuyện động |
     | :--- | :--- | :--- | :--- |
-    | [STT] | [Mô tả Tiếng Việt] | [Prompt Tiếng Anh] | [Prompt Tiếng Anh] |
+    | [STT 1] | [Mô tả cho Chương 1] | [Prompt cho Chương 1] | [Prompt cho Chương 1] |
+    | [STT 2] | [Mô tả cho Chương 2] | [Prompt cho Chương 2] | [Prompt cho Chương 2] |
+    | ... | ... | ... | ... |
 
 3.  **Tạo "Prompt Tạo Ảnh" (Nếu được yêu cầu):**
     *   **QUY TẮC CỐT LÕI (SFW - An toàn cho công việc):** BẠN PHẢI TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU ĐỂ ĐẢM BẢO HÌNH ẢNH AN TOÀN.
@@ -31,7 +34,7 @@ BẠN SẼ NHẬN ĐƯỢC DUY NHẤT MỘT CHƯƠNG. BẠN PHẢI TẠO RA DUY 
             *   Tránh mô tả y tế quá kỹ: Thay vì "bệnh nhân đang hấp hối, dây dợ chằng chịt", hãy tả "Bệnh nhân nằm trên giường bệnh, sắc mặt nhợt nhạt, không khí u buồn".
         *   **Lưu ý quan trọng về trang phục:** Luôn mô tả trang phục rõ ràng (ví dụ: "wearing a suit", "wearing a dress"). Nếu không mô tả, AI có thể "quên" vẽ quần áo, dẫn đến ảnh bị cấm.
 
-    *   **Chọn Khoảnh Khắc:** Chọn MỘT khoảnh khắc/hình ảnh TĨNH (snapshot) đắt giá nhất, giàu cảm xúc nhất trong chương. KHÔNG tóm tắt hay kể lại nhiều sự kiện.
+    *   **Chọn Khoảnh Khắc:** Với mỗi chương, chọn MỘT khoảnh khắc/hình ảnh TĨNH (snapshot) đắt giá nhất, giàu cảm xúc nhất. KHÔNG tóm tắt hay kể lại nhiều sự kiện.
     *   **Cột "Mô tả Kịch bản":** Viết mô tả bằng **Tiếng Việt** cho "snapshot" đã chọn. Cuối mô tả, liệt kê tên các nhân vật có trong ảnh, đặt trong dấu ngoặc đơn. Ví dụ: (Nhân vật A, Nhân vật B).
     *   **Cột "Prompt Tạo Ảnh":** Viết prompt **Tiếng Anh** CỰC KỲ CHI TIẾT theo quy trình "Dịch, Dán, Sửa" để đảm bảo nhân vật nhất quán.
         1.  **Dịch & Dán:** Dịch nguyên văn mô tả nhân vật từ "Định nghĩa nhân vật" sang Tiếng Anh và dán vào ĐẦU prompt.
@@ -113,20 +116,22 @@ const CHARACTER_DEFINITION_SYSTEM_INSTRUCTION = `Mô tả các nhân vật trong
 
 const parseGeminiResponse = (responseText: string): Script => {
   try {
-    const tableMatch = responseText.match(/### Bảng Phân cảnh\s*([\s\S]*)/);
-    if (!tableMatch && !responseText.includes('|')) throw new Error("AI đã không tạo được bảng phân cảnh đúng định dạng. Vui lòng thử lại.");
-    
-    const contentToParse = tableMatch ? tableMatch[1] : responseText;
-    const rows = contentToParse.trim().split('\n').filter(row => row.includes('|') && !row.includes('---'));
+    if (!responseText.includes('|')) throw new Error("AI đã không tạo được bảng phân cảnh đúng định dạng. Vui lòng thử lại.");
+
+    const rows = responseText.trim().split('\n').filter(row => row.includes('|') && !row.includes('---'));
     const dataRows = rows.slice(1); // Bỏ qua header của bảng
+
+    if (dataRows.length === 0) {
+        throw new Error("AI đã trả về một bảng trống. Vui lòng kiểm tra lại đầu vào hoặc thử lại.");
+    }
 
     const scenes: Scene[] = dataRows.map((row, index) => {
       const columns = row.split('|').map(cell => cell.trim().replace(/<br\s*\/?>/gi, '\n')).filter(c => c !== ''); 
-      if (columns.length < 3) return null; // Need at least STT, Desc, ImagePrompt
+      if (columns.length < 3) return null;
       return {
         sceneNumber: columns[0] || `Cảnh ${index + 1}`,
         description: columns[1] || '',
-        imagePrompt: columns[2] || '{}',
+        imagePrompt: columns[2] || '',
         motionPrompt: columns.length > 3 ? columns[3] : '',
       };
     }).filter((scene): scene is Scene => scene !== null);
@@ -134,6 +139,9 @@ const parseGeminiResponse = (responseText: string): Script => {
     return { scenes };
   } catch (error) {
     console.error("Parse Error:", error);
+     if (error instanceof Error) {
+        throw error;
+    }
     throw new Error("Phản hồi của AI có cấu trúc không hợp lệ và không thể xử lý. Vui lòng thử lại.");
   }
 };
@@ -218,18 +226,9 @@ Nhiệm vụ: Tạo ra một prompt Tiếng Anh duy nhất dựa trên các thô
     return response.text?.trim() || "";
 };
 
-export const createChatSession = (ai: GoogleGenAI, modelName: string): Chat => {
-  return ai.chats.create({
-    model: modelName,
-    config: { 
-      systemInstruction: SYSTEM_INSTRUCTION 
-    },
-  });
-};
-
-
-export const generateScriptFromChat = async (
-    chat: Chat,
+export const generateScript = async (
+    ai: GoogleGenAI,
+    modelName: string,
     userInput: string, 
     mode: 'idea' | 'script', 
     stylePrompt: string, 
@@ -240,8 +239,7 @@ export const generateScriptFromChat = async (
     generateWhisk: boolean,
     generateDreamina: boolean,
     includeMusic: boolean, 
-    dialogueLanguage: string,
-    chapterIndex: number
+    dialogueLanguage: string
 ): Promise<Script> => {
     
     const styleGuides: { [key: string]: string } = {
@@ -290,21 +288,17 @@ export const generateScriptFromChat = async (
     if (lowerCaseStylePrompt.includes('fantasy')) styleGuide += styleGuides.fantasy;
     if (lowerCaseStylePrompt.includes('vintage')) styleGuide += styleGuides.vintage;
 
-    let characterDefPart = '';
-    // Send character definition for the first chapter (index 0), and then every 5 chapters after that (6th, 11th, etc.)
-    if (chapterIndex === 0 || (chapterIndex > 0 && (chapterIndex + 1) % 5 === 1)) {
-      characterDefPart = `
+    const characterDefPart = characterDefinition 
+        ? `
 Định nghĩa nhân vật: 
 \`\`\`
 ${characterDefinition}
 \`\`\`
-      `;
-    }
-
+        ` 
+        : '';
 
     const context = `
 [YÊU CẦU MỚI]
-Bắt đầu đánh số thứ tự phân cảnh từ ${chapterIndex + 1}.
 Chế độ: ${mode === 'idea' ? 'Phát triển từ ý tưởng' : 'Tối ưu hóa từ kịch bản sẵn có'}
 Tỉ lệ khung hình: ${aspectRatio}
 Âm nhạc: ${includeMusic ? 'Có' : 'Không'}
@@ -320,14 +314,18 @@ ${styleGuide ? styleGuide : `Tạo prompt dựa trên các từ khóa phong các
 - Tối ưu cho Whisk (tối đa 3 nhân vật): ${generateWhisk ? 'Có' : 'Không'}
 - Tối ưu cho Dreamina (prompt dài 1600 ký tự): ${generateDreamina ? 'Có' : 'Không'}
 
-Nội dung người dùng nhập:
+Nội dung người dùng nhập (bao gồm nhiều chương, mỗi chương sẽ là một hàng trong bảng):
 ---
 ${userInput}
 ---
     `.trim();
 
-    const response = await chat.sendMessage({ message: context });
-    const responseText = response.text || "";
+    const response = await ai.models.generateContent({
+        model: modelName,
+        contents: [{ parts: [{ text: context }] }],
+        config: { systemInstruction: SYSTEM_INSTRUCTION }
+    });
 
+    const responseText = response.text || "";
     return parseGeminiResponse(responseText);
 };
