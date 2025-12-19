@@ -51,8 +51,6 @@ interface InputFormProps {
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateCharacterDefinition: () => void;
   onStopGeneration: () => void;
-  // FIX: Add missing onClearPrompts prop to fix TypeScript error.
-  onClearPrompts: () => void;
 }
 
 export const defaultStyles: StyleInfo[] = [
@@ -116,7 +114,7 @@ const InputForm: React.FC<InputFormProps> = (props) => {
       setDialogueLanguage, setSelectedModel, setStyles, setAspectRatios,
       setStoryChapters,
       onSubmit, onExport, onImport,
-      onGenerateCharacterDefinition, onStopGeneration, onClearPrompts
+      onGenerateCharacterDefinition, onStopGeneration
   } = props;
     
   const [isAddingStyle, setIsAddingStyle] = useState(false);
@@ -629,14 +627,6 @@ const InputForm: React.FC<InputFormProps> = (props) => {
         </div>
         
         <div className="flex items-center space-x-4 flex-shrink-0">
-            <button
-                type="button"
-                onClick={onClearPrompts}
-                disabled={!script || script.scenes.length === 0 || isLoading}
-                className="px-4 py-2 text-sm font-semibold rounded-md text-slate-300 bg-red-800 hover:bg-red-700 disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-            >
-                {t.clear_prompts_btn}
-            </button>
             <button 
                 type="button" 
                 onClick={handleMainButtonClick} 

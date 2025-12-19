@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import type { Script, StyleInfo, ProjectState, StoryChapter } from './types';
 import { GoogleGenAI, Chat } from '@google/genai';
@@ -63,8 +62,8 @@ const App: React.FC = () => {
   ]);
   
   useEffect(() => {
-    const sessionIsAuthenticated = sessionStorage.getItem('app_authenticated');
-    if (sessionIsAuthenticated === 'true') {
+    const localIsAuthenticated = localStorage.getItem('app_authenticated');
+    if (localIsAuthenticated === 'true') {
         setIsAuthenticated(true);
     }
 
@@ -125,19 +124,19 @@ const App: React.FC = () => {
   const handleSaveKey = (key: string) => {
     localStorage.setItem('gemini_api_key', key);
     setApiKey(key);
-    sessionStorage.removeItem('app_authenticated');
+    localStorage.removeItem('app_authenticated');
     setIsAuthenticated(false);
   };
 
   const handleDeleteKey = () => {
     localStorage.removeItem('gemini_api_key');
     setApiKey('');
-    sessionStorage.removeItem('app_authenticated');
+    localStorage.removeItem('app_authenticated');
     setIsAuthenticated(false);
   };
   
   const handleLoginSuccess = () => {
-    sessionStorage.setItem('app_authenticated', 'true');
+    localStorage.setItem('app_authenticated', 'true');
     setIsAuthenticated(true);
   };
 
@@ -184,16 +183,6 @@ const App: React.FC = () => {
     generationCancelled.current = true;
     setGenerationStatus('idle');
     setError(lang === 'vi' ? 'Quá trình tạo đã bị dừng.' : 'Generation stopped by user.');
-  };
-  
-  const handleClearPrompts = () => {
-    if (window.confirm(lang === 'vi' ? 'Bạn có chắc muốn xóa tất cả prompt đã tạo không?' : 'Are you sure you want to clear all generated prompts?')) {
-      generationCancelled.current = true;
-      generationCleared.current = true;
-      setScript(null);
-      setGenerationStatus('idle');
-      setError(null);
-    }
   };
 
   const handleGenerateScript = async () => {
@@ -464,7 +453,7 @@ const App: React.FC = () => {
             setStyles={setStyles} setAspectRatios={setAspectRatios} setStoryChapters={setStoryChapters}
             onSubmit={handleGenerateScript} onExport={handleExportProject} onImport={handleImportProject}
             onGenerateCharacterDefinition={handleGenerateCharacterDefinition}
-            onStopGeneration={handleStopGeneration} onClearPrompts={handleClearPrompts}
+            onStopGeneration={handleStopGeneration}
           />
         </div>
         <ScriptDisplay 
